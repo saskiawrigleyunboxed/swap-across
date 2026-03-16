@@ -20,6 +20,7 @@
     }
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
     * { font-family: 'Inter', sans-serif; }
 
@@ -76,6 +77,10 @@
     /* How-it-works icon boxes */
     .how-box { transition: transform 0.2s ease; }
     .how-box:hover { transform: translateY(-4px); }
+
+    /* Leaflet map z-index fix */
+    .leaflet-top, .leaflet-bottom { z-index: 30 !important; }
+
   </style>
 </head>
 <body class="bg-[#F8F6F3] text-[#2C3E50] min-h-screen">
@@ -91,7 +96,20 @@
        class="hidden fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-6 py-4">
     <div class="max-w-6xl mx-auto flex items-center justify-between">
       <button onclick="showScreen('matches')" class="flex items-center gap-2.5 group">
-        <img src="Swap Across Logo.jpeg" alt="Swap Across logo" class="w-10 h-10 rounded-lg object-contain bg-white">
+        <svg class="w-10 h-10 flex-shrink-0" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="50" cy="12" r="7" fill="#E74C3C"/>
+          <path fill="#E74C3C" d="M37.32 22.81 A30 30 0 0 1 62.68 22.81 L57.61 33.69 A18 18 0 0 0 42.39 33.69 Z"/>
+          <circle cx="82.91" cy="31" r="7" fill="#E8793A"/>
+          <path fill="#E8793A" d="M67.21 25.42 A30 30 0 0 1 79.89 47.38 L67.93 48.43 A18 18 0 0 0 60.32 35.25 Z"/>
+          <circle cx="82.91" cy="69" r="7" fill="#3DBFBF"/>
+          <path fill="#3DBFBF" d="M79.89 52.62 A30 30 0 0 1 67.21 74.58 L60.32 64.75 A18 18 0 0 0 67.93 51.57 Z"/>
+          <circle cx="50" cy="88" r="7" fill="#F0B429"/>
+          <path fill="#F0B429" d="M62.68 77.19 A30 30 0 0 1 37.32 77.19 L42.39 66.31 A18 18 0 0 0 57.61 66.31 Z"/>
+          <circle cx="17.09" cy="69" r="7" fill="#555555"/>
+          <path fill="#555555" d="M32.79 74.58 A30 30 0 0 1 20.11 52.62 L32.07 51.57 A18 18 0 0 0 39.68 64.75 Z"/>
+          <circle cx="17.09" cy="31" r="7" fill="#2E86C1"/>
+          <path fill="#2E86C1" d="M20.11 47.38 A30 30 0 0 1 32.79 25.42 L39.68 35.25 A18 18 0 0 0 32.07 48.43 Z"/>
+        </svg>
         <span class="font-bold text-[#2C3E50] text-lg group-hover:text-[#E8793A] transition-colors">Swap Across</span>
       </button>
       <div class="flex items-center gap-7">
@@ -99,7 +117,7 @@
                 class="nav-link text-gray-500 text-sm font-medium hover:text-[#E8793A]">Matches</button>
         <button onclick="showScreen('meetups')" id="nav-meetups"
                 class="nav-link text-gray-500 text-sm font-medium hover:text-[#E8793A]">Meetups</button>
-        <div id="nav-profile" class="hidden items-center gap-2">
+<div id="nav-profile" class="hidden items-center gap-2">
           <div id="nav-avatar"
                class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
           </div>
@@ -125,7 +143,20 @@
         <div class="flex-1 fade-in">
           <!-- Logo -->
           <div class="flex items-center gap-3 mb-10">
-            <img src="Swap Across Logo.jpeg" alt="Swap Across logo" class="w-16 h-16 rounded-lg object-contain bg-white">
+            <svg class="w-16 h-16 flex-shrink-0" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="50" cy="12" r="7" fill="#E74C3C"/>
+              <path fill="#E74C3C" d="M37.32 22.81 A30 30 0 0 1 62.68 22.81 L57.61 33.69 A18 18 0 0 0 42.39 33.69 Z"/>
+              <circle cx="82.91" cy="31" r="7" fill="#E8793A"/>
+              <path fill="#E8793A" d="M67.21 25.42 A30 30 0 0 1 79.89 47.38 L67.93 48.43 A18 18 0 0 0 60.32 35.25 Z"/>
+              <circle cx="82.91" cy="69" r="7" fill="#3DBFBF"/>
+              <path fill="#3DBFBF" d="M79.89 52.62 A30 30 0 0 1 67.21 74.58 L60.32 64.75 A18 18 0 0 0 67.93 51.57 Z"/>
+              <circle cx="50" cy="88" r="7" fill="#F0B429"/>
+              <path fill="#F0B429" d="M62.68 77.19 A30 30 0 0 1 37.32 77.19 L42.39 66.31 A18 18 0 0 0 57.61 66.31 Z"/>
+              <circle cx="17.09" cy="69" r="7" fill="#555555"/>
+              <path fill="#555555" d="M32.79 74.58 A30 30 0 0 1 20.11 52.62 L32.07 51.57 A18 18 0 0 0 39.68 64.75 Z"/>
+              <circle cx="17.09" cy="31" r="7" fill="#2E86C1"/>
+              <path fill="#2E86C1" d="M20.11 47.38 A30 30 0 0 1 32.79 25.42 L39.68 35.25 A18 18 0 0 0 32.07 48.43 Z"/>
+            </svg>
             <span class="font-black text-[#2C3E50] text-xl tracking-tight">Swap Across</span>
           </div>
 
@@ -146,23 +177,6 @@
             </svg>
           </button>
 
-          <!-- Stats row -->
-          <div class="mt-12 flex flex-wrap gap-6">
-            <div class="flex items-center gap-2">
-              <span class="text-2xl font-black text-[#E8793A]">15%</span>
-              <span class="text-xs text-gray-400 leading-tight max-w-[120px]">of Gen Z stressed about finances</span>
-            </div>
-            <div class="w-px bg-gray-200 self-stretch hidden sm:block"></div>
-            <div class="flex items-center gap-2">
-              <span class="text-2xl font-black text-[#3DBFBF]">25%</span>
-              <span class="text-xs text-gray-400 leading-tight max-w-[120px]">over 65s don't use the internet</span>
-            </div>
-            <div class="w-px bg-gray-200 self-stretch hidden sm:block"></div>
-            <div class="flex items-center gap-2">
-              <span class="text-2xl font-black text-[#2C3E50]">50%</span>
-              <span class="text-xs text-gray-400 leading-tight max-w-[120px]">longer life with social connection</span>
-            </div>
-          </div>
         </div>
 
         <!-- Right: stacked card preview -->
@@ -246,6 +260,117 @@
       </div>
     </div>
 
+    <!-- A real Swap Across story -->
+    <div class="bg-white py-24">
+      <div class="max-w-4xl mx-auto px-6">
+        <h2 class="text-3xl font-black text-center text-[#2C3E50] mb-3">A real Swap Across story</h2>
+        <p class="text-center text-gray-400 mb-14 text-base">This is what happens when two people share what they know.</p>
+
+        <!-- Profile bubbles -->
+        <div class="flex justify-center gap-12 mb-16">
+          <div class="flex flex-col items-center">
+            <div class="w-20 h-20 rounded-full bg-[#3DBFBF] flex items-center justify-center text-white text-2xl font-black mb-3">E</div>
+            <p class="font-bold text-[#2C3E50] text-center">Emily, 21</p>
+            <p class="text-sm text-gray-400 text-center mt-1">Design student, London</p>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-20 h-20 rounded-full bg-[#E8793A] flex items-center justify-center text-white text-2xl font-black mb-3">L</div>
+            <p class="font-bold text-[#2C3E50] text-center">Liz, 57</p>
+            <p class="text-sm text-gray-400 text-center mt-1">Retired nurse, Stoke Newington</p>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="space-y-10 mb-14">
+          <div class="flex gap-6">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#3DBFBF]/10 text-[#3DBFBF] flex items-center justify-center text-sm font-black">01</div>
+            <div>
+              <h3 class="font-bold text-[#2C3E50] mb-1">They matched</h3>
+              <p class="text-gray-400 text-sm leading-relaxed">Emily needed financial advice and gardening know-how. Liz wanted to get to grips with Instagram. Swap Across connected them.</p>
+            </div>
+          </div>
+          <div class="flex gap-6">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#3DBFBF]/10 text-[#3DBFBF] flex items-center justify-center text-sm font-black">02</div>
+            <div>
+              <h3 class="font-bold text-[#2C3E50] mb-1">They met</h3>
+              <p class="text-gray-400 text-sm leading-relaxed">They met at a Swap Across coffee morning in Stoke Newington. Liz taught Emily to garden. Emily taught Liz social media.</p>
+            </div>
+          </div>
+          <div class="flex gap-6">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#3DBFBF]/10 text-[#3DBFBF] flex items-center justify-center text-sm font-black">03</div>
+            <div>
+              <h3 class="font-bold text-[#2C3E50] mb-1">Their community grew</h3>
+              <p class="text-gray-400 text-sm leading-relaxed">Emily started walking Liz's dog. Liz introduced Emily's friends to her network. The local Swap Across community kept growing — and old tensions between students and residents began to ease.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="text-center">
+          <button onclick="showScreen('onboarding')" class="bg-[#E8793A] text-white font-bold px-8 py-3.5 rounded-full hover:bg-[#d4692e] transition-colors">Start your own story</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- How we keep you safe -->
+    <div class="bg-[#F8F6F3] py-20">
+      <div class="max-w-4xl mx-auto px-6">
+        <h2 class="text-3xl font-black text-center text-[#2C3E50] mb-3">How we keep you safe</h2>
+        <p class="text-center text-gray-400 mb-14 text-base">Swap Across is built around trust, community, and clear boundaries</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+
+          <!-- Public venues -->
+          <div class="bg-white rounded-2xl p-7 border border-gray-100">
+            <div class="flex items-center gap-3 mb-3">
+              <svg class="flex-shrink-0" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 2a6 6 0 016 6c0 4.5-6 10-6 10S4 12.5 4 8a6 6 0 016-6z" stroke="#3DBFBF" stroke-width="1.8"/>
+                <circle cx="10" cy="8" r="2" stroke="#3DBFBF" stroke-width="1.8"/>
+              </svg>
+              <h3 class="font-bold text-[#2C3E50] text-base">Public venues only</h3>
+            </div>
+            <p class="text-gray-400 text-sm leading-relaxed">All first meetups take place in a verified public coffee shop, never a private address.</p>
+          </div>
+
+          <!-- Moderation -->
+          <div class="bg-white rounded-2xl p-7 border border-gray-100">
+            <div class="flex items-center gap-3 mb-3">
+              <svg class="flex-shrink-0" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 2L3 5v5c0 4 3.5 7.5 7 8.5C13.5 17.5 17 14 17 10V5l-7-3z" stroke="#3DBFBF" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M7 10l2 2 4-4" stroke="#3DBFBF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <h3 class="font-bold text-[#2C3E50] text-base">Reviewed profiles</h3>
+            </div>
+            <p class="text-gray-400 text-sm leading-relaxed">Every profile is checked by the Swap Across team before it goes live.</p>
+          </div>
+
+          <!-- Guidelines -->
+          <div class="bg-white rounded-2xl p-7 border border-gray-100">
+            <div class="flex items-center gap-3 mb-3">
+              <svg class="flex-shrink-0" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <rect x="4" y="2" width="12" height="16" rx="2" stroke="#3DBFBF" stroke-width="1.8"/>
+                <path d="M7 7h6M7 10h6M7 13h4" stroke="#3DBFBF" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              <h3 class="font-bold text-[#2C3E50] text-base">Community code of conduct</h3>
+            </div>
+            <p class="text-gray-400 text-sm leading-relaxed">All members agree to our guidelines before joining. We take any breach seriously.</p>
+          </div>
+
+          <!-- Reporting -->
+          <div class="bg-white rounded-2xl p-7 border border-gray-100">
+            <div class="flex items-center gap-3 mb-3">
+              <svg class="flex-shrink-0" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M4 3h9l-2 4 2 4H4V3z" stroke="#3DBFBF" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M4 17v-6" stroke="#3DBFBF" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              <h3 class="font-bold text-[#2C3E50] text-base">Easy reporting</h3>
+            </div>
+            <p class="text-gray-400 text-sm leading-relaxed">Report any concern from any profile or meetup. We respond within 24 hours.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
   </section><!-- /landing -->
 
 
@@ -264,10 +389,12 @@
       <!-- Step dots -->
       <div class="flex items-center justify-center gap-0 mb-10">
         <div id="dot-1" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-[#E8793A] text-white">1</div>
-        <div id="line-1" class="step-line h-0.5 w-12 bg-gray-200"></div>
+        <div id="line-1" class="step-line h-0.5 w-10 bg-gray-200"></div>
         <div id="dot-2" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 text-gray-400">2</div>
-        <div id="line-2" class="step-line h-0.5 w-12 bg-gray-200"></div>
+        <div id="line-2" class="step-line h-0.5 w-10 bg-gray-200"></div>
         <div id="dot-3" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 text-gray-400">3</div>
+        <div id="line-3" class="step-line h-0.5 w-10 bg-gray-200"></div>
+        <div id="dot-4" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 text-gray-400">4</div>
       </div>
 
       <!-- ── Step 1 ── -->
@@ -292,13 +419,6 @@
             </label>
             <textarea id="input-bio" rows="3" placeholder="Tell us a bit about yourself..."
                       class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-base bg-white resize-none"></textarea>
-          </div>
-        </div>
-
-        <div class="mb-8">
-          <p class="text-sm font-semibold text-[#2C3E50] mb-3">Choose your avatar</p>
-          <div id="avatar-grid" class="grid grid-cols-4 gap-3">
-            <!-- Filled by JS -->
           </div>
         </div>
 
@@ -338,8 +458,57 @@
           <!-- Filled by JS -->
         </div>
 
-        <button onclick="findMatches()"
+        <button onclick="goStep4()"
                 class="w-full bg-[#E8793A] text-white py-4 rounded-xl font-semibold text-base hover:bg-[#d4692b] transition-colors flex items-center justify-center gap-2">
+          Continue
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- ── Step 4 ── -->
+      <div id="step-4" class="hidden fade-in">
+        <h2 class="text-3xl font-black text-[#2C3E50] mb-1.5">You're in good hands</h2>
+        <p class="text-gray-400 mb-7">Swap Across is built around care and respect. Here's what every member — and our team — commits to.</p>
+
+        <ul class="space-y-4 mb-8">
+          <li class="flex items-start gap-3">
+            <svg class="flex-shrink-0 mt-0.5" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M10 2L3 5v5c0 4 3.5 7.5 7 8.5C13.5 17.5 17 14 17 10V5l-7-3z" stroke="#3DBFBF" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-sm text-gray-500 leading-relaxed">Your first meetup will always be in a public coffee shop — we suggest the venue so you never have to worry about where to go.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <svg class="flex-shrink-0 mt-0.5" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M10 2L3 5v5c0 4 3.5 7.5 7 8.5C13.5 17.5 17 14 17 10V5l-7-3z" stroke="#3DBFBF" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-sm text-gray-500 leading-relaxed">Every profile is reviewed by our team before you can connect — so you know who you're meeting.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <svg class="flex-shrink-0 mt-0.5" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M10 2L3 5v5c0 4 3.5 7.5 7 8.5C13.5 17.5 17 14 17 10V5l-7-3z" stroke="#3DBFBF" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-sm text-gray-500 leading-relaxed">Everyone here has agreed to treat each other with patience and kindness — whatever their age or experience.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <svg class="flex-shrink-0 mt-0.5" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M10 2L3 5v5c0 4 3.5 7.5 7 8.5C13.5 17.5 17 14 17 10V5l-7-3z" stroke="#3DBFBF" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-sm text-gray-500 leading-relaxed">If anything ever feels wrong, you can report it from any profile and we'll respond within 24 hours.</span>
+          </li>
+        </ul>
+
+        <label class="flex items-start gap-3 cursor-pointer mb-8 group">
+          <input id="guidelines-checkbox" type="checkbox"
+                 class="mt-1 w-4 h-4 accent-[#E8793A] flex-shrink-0">
+          <span class="text-sm text-gray-500 leading-relaxed group-hover:text-[#2C3E50] transition-colors">
+            I'm ready to join the Swap Across community
+          </span>
+        </label>
+
+        <button onclick="findMatches()"
+                class="w-full bg-[#E8793A] text-white py-4 rounded-xl font-semibold text-base hover:bg-[#d4692b] transition-colors">
           Find my matches
         </button>
       </div>
@@ -349,7 +518,23 @@
 
 
   <!-- ═══════════════════════ MATCHES ═══════════════════════ -->
-  <section id="screen-matches" class="hidden pt-24 pb-20 px-6">
+  <section id="screen-matches" class="hidden relative overflow-hidden pt-24 pb-20 px-6">
+    <div class="absolute top-0 right-0 pointer-events-none" aria-hidden="true">
+      <svg class="w-96 h-96 -translate-y-16 translate-x-16 opacity-[0.09]" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="12" r="7" fill="#3DBFBF"/>
+        <path fill="#3DBFBF" d="M37.32 22.81 A30 30 0 0 1 62.68 22.81 L57.61 33.69 A18 18 0 0 0 42.39 33.69 Z"/>
+        <circle cx="82.91" cy="31" r="7" fill="#3DBFBF"/>
+        <path fill="#3DBFBF" d="M67.21 25.42 A30 30 0 0 1 79.89 47.38 L67.93 48.43 A18 18 0 0 0 60.32 35.25 Z"/>
+        <circle cx="82.91" cy="69" r="7" fill="#3DBFBF"/>
+        <path fill="#3DBFBF" d="M79.89 52.62 A30 30 0 0 1 67.21 74.58 L60.32 64.75 A18 18 0 0 0 67.93 51.57 Z"/>
+        <circle cx="50" cy="88" r="7" fill="#3DBFBF"/>
+        <path fill="#3DBFBF" d="M62.68 77.19 A30 30 0 0 1 37.32 77.19 L42.39 66.31 A18 18 0 0 0 57.61 66.31 Z"/>
+        <circle cx="17.09" cy="69" r="7" fill="#3DBFBF"/>
+        <path fill="#3DBFBF" d="M32.79 74.58 A30 30 0 0 1 20.11 52.62 L32.07 51.57 A18 18 0 0 0 39.68 64.75 Z"/>
+        <circle cx="17.09" cy="31" r="7" fill="#3DBFBF"/>
+        <path fill="#3DBFBF" d="M20.11 47.38 A30 30 0 0 1 32.79 25.42 L39.68 35.25 A18 18 0 0 0 32.07 48.43 Z"/>
+      </svg>
+    </div>
     <div class="max-w-6xl mx-auto">
 
       <div class="mb-8 fade-in">
@@ -380,13 +565,31 @@
 
 
   <!-- ═══════════════════════ MEETUPS ═══════════════════════ -->
-  <section id="screen-meetups" class="hidden pt-24 pb-20 px-6">
+  <section id="screen-meetups" class="hidden relative overflow-hidden pt-24 pb-20 px-6">
+    <div class="absolute top-0 right-0 pointer-events-none" aria-hidden="true">
+      <svg class="w-96 h-96 -translate-y-16 translate-x-16 opacity-[0.09]" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="12" r="7" fill="#3DBFBF"/>
+        <path fill="#3DBFBF" d="M37.32 22.81 A30 30 0 0 1 62.68 22.81 L57.61 33.69 A18 18 0 0 0 42.39 33.69 Z"/>
+        <circle cx="82.91" cy="31" r="7" fill="#3DBFBF"/>
+        <path fill="#3DBFBF" d="M67.21 25.42 A30 30 0 0 1 79.89 47.38 L67.93 48.43 A18 18 0 0 0 60.32 35.25 Z"/>
+        <circle cx="82.91" cy="69" r="7" fill="#3DBFBF"/>
+        <path fill="#3DBFBF" d="M79.89 52.62 A30 30 0 0 1 67.21 74.58 L60.32 64.75 A18 18 0 0 0 67.93 51.57 Z"/>
+        <circle cx="50" cy="88" r="7" fill="#3DBFBF"/>
+        <path fill="#3DBFBF" d="M62.68 77.19 A30 30 0 0 1 37.32 77.19 L42.39 66.31 A18 18 0 0 0 57.61 66.31 Z"/>
+        <circle cx="17.09" cy="69" r="7" fill="#3DBFBF"/>
+        <path fill="#3DBFBF" d="M32.79 74.58 A30 30 0 0 1 20.11 52.62 L32.07 51.57 A18 18 0 0 0 39.68 64.75 Z"/>
+        <circle cx="17.09" cy="31" r="7" fill="#3DBFBF"/>
+        <path fill="#3DBFBF" d="M20.11 47.38 A30 30 0 0 1 32.79 25.42 L39.68 35.25 A18 18 0 0 0 32.07 48.43 Z"/>
+      </svg>
+    </div>
     <div class="max-w-6xl mx-auto">
 
-      <div class="mb-10 fade-in">
+      <div class="mb-6 fade-in">
         <h2 class="text-3xl font-black text-[#2C3E50] mb-2">Upcoming Swap Across events</h2>
         <p class="text-gray-400">Grab a coffee. Trade a skill. Make a friend.</p>
       </div>
+
+      <div id="meetup-map" class="w-full h-96 rounded-2xl overflow-hidden mb-10 shadow-sm border border-gray-100"></div>
 
       <div id="meetups-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         <!-- Rendered by JS -->
@@ -444,7 +647,7 @@
         id: 1, name: 'Emily', age: 21, color: '#3DBFBF', initial: 'E',
         teaches: ['Social Media', 'Photography'],
         wants:   ['Financial Advice', 'Cooking', 'DIY & Home Repairs'],
-        bio: 'Design student who loves photography and TikTok. Ready to swap digital skills for real-life ones.',
+        bio: 'Design student who lost confidence during lockdown. Spends too much time on social media. Needs help with finances and landlord issues — but can teach you everything about Instagram and photography.',
         categories: ['tech', 'creative']
       },
       {
@@ -469,10 +672,10 @@
         categories: ['tech', 'life']
       },
       {
-        id: 5, name: 'Liz', age: 60, color: '#E8793A', initial: 'L',
+        id: 5, name: 'Liz', age: 57, color: '#E8793A', initial: 'L',
         teaches: ['Gardening', 'Cooking', 'Writing'],
         wants:   ['Social Media', 'Photography', 'Coding'],
-        bio: 'Retired nurse with a gorgeous garden. Would love to get to grips with Instagram and share my recipes.',
+        bio: 'Retired nurse, recently single, and loving her Airbnb. Ready to teach cooking and gardening to anyone who will help her get to grips with social media and dating apps.',
         categories: ['life', 'creative', 'tech']
       },
       {
@@ -522,7 +725,8 @@
         skillsFocus: 'Tech & Digital',
         spots: 8,
         color: '#3DBFBF',
-        joined: false
+        joined: false,
+        lat: 51.5625, lng: -0.0739
       },
       {
         id: 2,
@@ -533,7 +737,8 @@
         skillsFocus: 'Life Skills',
         spots: 12,
         color: '#E8793A',
-        joined: false
+        joined: false,
+        lat: 51.4617, lng: -0.1145
       },
       {
         id: 3,
@@ -544,7 +749,8 @@
         skillsFocus: 'Creative Skills',
         spots: 10,
         color: '#9B59B6',
-        joined: false
+        joined: false,
+        lat: 51.5353, lng: -0.1025
       },
       {
         id: 4,
@@ -555,7 +761,8 @@
         skillsFocus: 'Finance & Careers',
         spots: 8,
         color: '#F0B429',
-        joined: false
+        joined: false,
+        lat: 51.5388, lng: -0.0612
       },
       {
         id: 5,
@@ -566,7 +773,8 @@
         skillsFocus: 'Mixed Skills',
         spots: 15,
         color: '#E74C3C',
-        joined: false
+        joined: false,
+        lat: 51.4701, lng: -0.0702
       }
     ];
 
@@ -611,34 +819,7 @@
       if (activeLink) activeLink.classList.add('active');
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-
-    // ──────────────────────────────
-    //  ONBOARDING — Avatar
-    // ──────────────────────────────
-
-    function renderAvatarGrid() {
-      document.getElementById('avatar-grid').innerHTML = avatarOptions.map((av, i) => `
-        <div class="avatar-option flex flex-col items-center" onclick="selectAvatar(${i})">
-          <div id="av-${i}" class="av-ring w-14 h-14 rounded-full
-               ${i === 0 ? 'ring-2 ring-[#E8793A] ring-offset-2' : ''}"
-               style="background:${av.bg}">
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function selectAvatar(index) {
-      userProfile.avatar = avatarOptions[index];
-      avatarOptions.forEach((_, i) => {
-        const el = document.getElementById('av-' + i);
-        if (el) {
-          el.classList.toggle('ring-2', i === index);
-          el.classList.toggle('ring-[#E8793A]', i === index);
-          el.classList.toggle('ring-offset-2', i === index);
-        }
-      });
+      if (name === 'meetups') { setTimeout(initMap, 50); }
     }
 
 
@@ -672,8 +853,9 @@
     // ──────────────────────────────
 
     function updateStepDots(step) {
-      for (let i = 1; i <= 3; i++) {
+      for (let i = 1; i <= 4; i++) {
         const dot = document.getElementById('dot-' + i);
+        if (!dot) continue;
         if (i < step) {
           dot.className = 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-[#3DBFBF] text-white';
           dot.textContent = '✓';
@@ -685,10 +867,9 @@
           dot.textContent = i;
         }
       }
-      const line1 = document.getElementById('line-1');
-      const line2 = document.getElementById('line-2');
-      line1.className = 'step-line h-0.5 w-12 ' + (step > 1 ? 'bg-[#3DBFBF]' : 'bg-gray-200');
-      line2.className = 'step-line h-0.5 w-12 ' + (step > 2 ? 'bg-[#3DBFBF]' : 'bg-gray-200');
+      document.getElementById('line-1').className = 'step-line h-0.5 w-10 ' + (step > 1 ? 'bg-[#3DBFBF]' : 'bg-gray-200');
+      document.getElementById('line-2').className = 'step-line h-0.5 w-10 ' + (step > 2 ? 'bg-[#3DBFBF]' : 'bg-gray-200');
+      document.getElementById('line-3').className = 'step-line h-0.5 w-10 ' + (step > 3 ? 'bg-[#3DBFBF]' : 'bg-gray-200');
     }
 
     function goStep2() {
@@ -698,6 +879,9 @@
       userProfile.name = name;
       userProfile.age  = document.getElementById('input-age').value;
       userProfile.bio  = document.getElementById('input-bio').value;
+
+      // Auto-assign avatar colour based on first letter of name
+      userProfile.avatar = avatarOptions[name.charCodeAt(0) % avatarOptions.length];
 
       document.getElementById('step-1').classList.add('hidden');
       const s2 = document.getElementById('step-2');
@@ -722,9 +906,21 @@
       updateStepDots(3);
     }
 
-    function findMatches() {
+    function goStep4() {
       if (userProfile.skillsWant.length === 0) {
         showToast('Please select at least one skill you want to learn');
+        return;
+      }
+      document.getElementById('step-3').classList.add('hidden');
+      const s4 = document.getElementById('step-4');
+      s4.classList.remove('hidden');
+      s4.classList.add('fade-in');
+      updateStepDots(4);
+    }
+
+    function findMatches() {
+      if (!document.getElementById('guidelines-checkbox').checked) {
+        showToast('Please agree to the community guidelines to continue');
         return;
       }
 
@@ -790,72 +986,68 @@
       }
 
       grid.innerHTML = list.map(p => {
-        const isYoung  = p.age < 40;
-        const ageBg    = isYoung ? 'bg-[#3DBFBF]/10 text-[#3DBFBF]' : 'bg-[#E8793A]/10 text-[#E8793A]';
-        const barColor = p.compatibility >= 75 ? '#E8793A' : p.compatibility >= 55 ? '#F0B429' : '#3DBFBF';
+        const isYoung        = p.age < 40;
+        const ageBg          = isYoung ? 'bg-[#3DBFBF]/10 text-[#3DBFBF]' : 'bg-[#E8793A]/10 text-[#E8793A]';
+        const theyCanTeachMe = p.teaches.filter(s => userProfile.skillsWant.includes(s));
+        const iCanTeachThem  = p.wants.filter(s => userProfile.skillsHave.includes(s));
+
+        const teachSkills = theyCanTeachMe.length ? theyCanTeachMe : p.teaches;
+        const wantSkills  = iCanTeachThem.length  ? iCanTeachThem  : p.wants;
+
+        const teachChips = teachSkills.map(s =>
+          `<span class="text-xs px-2.5 py-1 rounded-full font-medium bg-[#E8793A]/10 text-[#E8793A]">${s}</span>`
+        ).join('');
+        const wantChips = wantSkills.map(s =>
+          `<span class="text-xs px-2.5 py-1 rounded-full font-medium bg-[#3DBFBF]/10 text-[#3DBFBF]">${s}</span>`
+        ).join('');
 
         return `
           <div class="profile-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col">
-            <div class="h-1.5" style="background:${p.color}"></div>
+            <div class="h-1" style="background:${p.color}"></div>
             <div class="p-5 flex-1 flex flex-col">
 
               <!-- Header -->
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-black text-lg"
+              <div class="flex items-center gap-3 mb-5">
+                <div class="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-white font-black text-base"
                      style="background:${p.color}">${p.initial}</div>
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="font-bold text-[#2C3E50]">${p.name}</span>
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${ageBg}">${p.age}</span>
-                  </div>
+                  <span class="font-bold text-[#2C3E50]">${p.name}</span>
+                  <span class="text-xs font-semibold px-2 py-0.5 rounded-full ml-1.5 ${ageBg}">${p.age}</span>
                 </div>
-                <div class="text-right flex-shrink-0">
-                  <div class="text-lg font-black leading-none" style="color:${barColor}">${p.compatibility}%</div>
-                  <div class="text-xs text-gray-400">match</div>
-                </div>
+                <span class="text-xs text-gray-400 flex-shrink-0">${p.compatibility}% match</span>
               </div>
 
-              <!-- Compatibility bar -->
-              <div class="w-full bg-gray-100 rounded-full h-1.5 mb-4 overflow-hidden">
-                <div class="bar-fill h-1.5 rounded-full" style="background:${barColor}; width:0%"
-                     data-target="${p.compatibility}%"></div>
-              </div>
-
-              <!-- Teaches -->
-              <div class="mb-2.5">
-                <span class="text-xs text-gray-400 font-medium uppercase tracking-wide block mb-1.5">Teaches</span>
-                <div class="flex flex-wrap gap-1">
-                  ${p.teaches.map(s => `<span class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-[#3DBFBF]/10 text-[#3DBFBF]">${s}</span>`).join('')}
-                </div>
-              </div>
-
-              <!-- Wants -->
+              <!-- Matching skills -->
               <div class="mb-3">
-                <span class="text-xs text-gray-400 font-medium uppercase tracking-wide block mb-1.5">Wants to learn</span>
-                <div class="flex flex-wrap gap-1">
-                  ${p.wants.map(s => `<span class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-[#E8793A]/10 text-[#E8793A]">${s}</span>`).join('')}
-                </div>
+                <p class="text-xs text-gray-400 font-medium mb-1.5">They can teach you</p>
+                <div class="flex flex-wrap gap-1">${teachChips}</div>
+              </div>
+              <div class="mb-4">
+                <p class="text-xs text-gray-400 font-medium mb-1.5">You can teach them</p>
+                <div class="flex flex-wrap gap-1">${wantChips}</div>
               </div>
 
               <!-- Bio -->
               <p class="text-sm text-gray-400 leading-relaxed mb-4 flex-1">${p.bio}</p>
 
-              <!-- Connect -->
+              <!-- Trust + actions -->
+              <div class="flex items-center gap-1.5 text-xs text-gray-300 mb-3">
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M10 2L3 5v5c0 4 3.5 7.5 7 8.5C13.5 17.5 17 14 17 10V5l-7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                </svg>
+                <span>First meetup always in a public venue</span>
+              </div>
               <button id="connect-${p.id}" onclick="connectWith(${p.id}, '${p.name}')"
-                      class="w-full bg-[#2C3E50] text-white py-2.5 rounded-xl text-sm font-semibold
-                             hover:bg-[#1a252f] transition-colors">
+                      class="w-full bg-[#2C3E50] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#1a252f] transition-colors">
                 Send a request
+              </button>
+              <button onclick="reportProfile(${p.id})"
+                      class="w-full text-xs text-gray-300 hover:text-gray-400 pt-1.5 transition-colors">
+                Report this profile
               </button>
             </div>
           </div>`;
       }).join('');
-
-      // Animate bars
-      setTimeout(() => {
-        document.querySelectorAll('.bar-fill').forEach(bar => {
-          bar.style.width = bar.dataset.target;
-        });
-      }, 80);
     }
 
     function filterMatches(category, btn) {
@@ -866,6 +1058,10 @@
         ? computedProfiles
         : computedProfiles.filter(p => p.categories.includes(category));
       renderMatchCards(filtered);
+    }
+
+function reportProfile(id) {
+      showToast('Thank you. We have received your report and will review it shortly.');
     }
 
     function connectWith(id, name) {
@@ -885,7 +1081,7 @@
 
     function renderMeetups() {
       document.getElementById('meetups-grid').innerHTML = meetups.map(m => `
-        <div class="meetup-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col">
+        <div id="meetup-card-${m.id}" class="meetup-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col">
           <div class="h-1.5" style="background:${m.color}"></div>
           <div class="p-5 flex-1 flex flex-col">
 
@@ -952,6 +1148,46 @@
 
 
     // ──────────────────────────────
+    //  MAP
+    // ──────────────────────────────
+
+    let mapInitialized = false;
+    let leafletMap;
+
+    function initMap() {
+      if (mapInitialized) return;
+      mapInitialized = true;
+
+      leafletMap = L.map('meetup-map').setView([51.505, -0.09], 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(leafletMap);
+
+      meetups.forEach(m => {
+        const icon = L.divIcon({
+          className: '',
+          html: `<div style="background:${m.color};width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3)"></div>`,
+          iconSize: [16, 16],
+          iconAnchor: [8, 8]
+        });
+        L.marker([m.lat, m.lng], { icon })
+          .addTo(leafletMap)
+          .bindPopup(`<strong style="font-family:Inter,sans-serif">${m.name}</strong><br><span style="font-family:Inter,sans-serif;font-size:12px;color:#666">${m.venue}</span>`)
+          .on('click', () => {
+            const card = document.getElementById('meetup-card-' + m.id);
+            if (card) {
+              card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              card.style.outline = `3px solid ${m.color}`;
+              card.style.outlineOffset = '2px';
+              setTimeout(() => { card.style.outline = ''; card.style.outlineOffset = ''; }, 1500);
+            }
+          });
+      });
+    }
+
+
+    // ──────────────────────────────
     //  TOAST
     // ──────────────────────────────
 
@@ -969,10 +1205,10 @@
     //  INIT
     // ──────────────────────────────
 
-    renderAvatarGrid();
     updateStepDots(1);
     renderMeetups();
 
   </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </body>
 </html>
