@@ -555,7 +555,20 @@
 
       <div class="mb-10 fade-in">
         <h2 id="matches-heading" class="text-3xl font-black text-[#2C3E50] mb-1">Your matches</h2>
-        <p id="matches-subheading" class="text-gray-400 text-sm mb-8">Based on what you can teach and what you want to learn</p>
+        <p id="matches-subheading" class="text-gray-400 text-sm mb-6">Based on what you can teach and what you want to learn</p>
+
+        <!-- Skill search -->
+        <div class="relative mb-6">
+          <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+               width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.7"/>
+            <path d="M14 14l3.5 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+          <input type="text" id="skill-search"
+                 placeholder="Search for a skill — try 'yoga' or 'baking'..."
+                 oninput="applyFilters()"
+                 class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white text-[#2C3E50] placeholder-gray-400">
+        </div>
 
         <!-- Category tiles -->
         <div class="grid grid-cols-3 sm:grid-cols-5 gap-3" id="category-grid">
@@ -713,10 +726,28 @@
     // ──────────────────────────────
 
     const allSkills = [
-      'Social Media', 'Photography', 'Coding', 'Cooking',
-      'Music', 'Languages', 'Fitness', 'Graphic Design',
-      'DIY & Home Repairs', 'Financial Advice', 'Writing', 'Driving', 'Gardening'
+      // Tech & Digital
+      'Social Media', 'Photography', 'Coding', 'Graphic Design',
+      'Video Editing', 'Online Safety', 'Podcasting',
+      // Life Skills
+      'Cooking', 'Baking', 'DIY & Home Repairs', 'Driving',
+      'Gardening', 'Sewing & Knitting', 'First Aid', 'Cycling',
+      // Creative
+      'Music', 'Writing', 'Drawing & Illustration', 'Languages',
+      'Ceramics', 'Dance', 'Calligraphy',
+      // Finance & Career
+      'Financial Advice', 'Budgeting', 'CV & Job Applications',
+      'Public Speaking', 'Starting a Business',
+      // Fitness & Wellbeing
+      'Fitness', 'Yoga', 'Mindfulness',
     ];
+
+    const skillCategories = {
+      tech:     ['Social Media','Photography','Coding','Graphic Design','Video Editing','Online Safety','Podcasting'],
+      life:     ['Cooking','Baking','DIY & Home Repairs','Driving','Gardening','Sewing & Knitting','First Aid','Cycling','Fitness','Yoga','Mindfulness'],
+      creative: ['Music','Writing','Drawing & Illustration','Languages','Ceramics','Dance','Calligraphy'],
+      finance:  ['Financial Advice','Budgeting','CV & Job Applications','Public Speaking','Starting a Business'],
+    };
 
     const avatarOptions = [
       { bg: '#F48FB1' },
@@ -753,7 +784,7 @@
       },
       {
         id: 4, name: 'Marcus', age: 25, color: '#27AE60', initial: 'M',
-        teaches: ['Fitness', 'Social Media'],
+        teaches: ['Fitness', 'Social Media', 'Yoga'],
         wants:   ['Cooking', 'Financial Advice', 'Music'],
         bio: 'Personal trainer in training. Always on Instagram. Would love to learn to cook properly.',
         categories: ['tech', 'life']
@@ -799,6 +830,27 @@
         wants:   ['Coding', 'Social Media', 'Photography'],
         bio: 'Former French teacher. Still sharp as a tack! Want to use my phone and computer better.',
         categories: ['creative', 'life', 'tech']
+      },
+      {
+        id: 11, name: 'Aysha', age: 28, color: '#E74C3C', initial: 'A',
+        teaches: ['Yoga', 'Mindfulness', 'Drawing & Illustration'],
+        wants:   ['Financial Advice', 'Coding', 'Budgeting'],
+        bio: 'Yoga teacher and illustrator. Would love help getting her finances sorted so she can go freelance.',
+        categories: ['life', 'creative', 'finance']
+      },
+      {
+        id: 12, name: 'Derek', age: 68, color: '#5B9BD5', initial: 'D',
+        teaches: ['Public Speaking', 'Starting a Business', 'CV & Job Applications'],
+        wants:   ['Social Media', 'Video Editing', 'Podcasting'],
+        bio: 'Former HR director. Can help with interviews and starting a business. Just wants to figure out TikTok.',
+        categories: ['finance', 'tech']
+      },
+      {
+        id: 13, name: 'Hana', age: 19, color: '#F0B429', initial: 'H',
+        teaches: ['Video Editing', 'Social Media', 'Baking'],
+        wants:   ['Driving', 'Financial Advice', 'First Aid'],
+        bio: 'A-level student who runs a baking account online. Would love help with driving lessons and life admin.',
+        categories: ['tech', 'life']
       }
     ];
 
@@ -1036,9 +1088,11 @@
       currentFilter = 'all';
       document.querySelectorAll('.category-tile').forEach(b => b.classList.remove('active'));
       document.querySelector('.category-tile').classList.add('active');
+      const searchEl = document.getElementById('skill-search');
+      if (searchEl) searchEl.value = '';
 
       showScreen('matches');
-      renderMatchCards(computedProfiles);
+      applyFilters();
     }
 
 
@@ -1101,7 +1155,17 @@
                   <span class="font-bold text-[#2C3E50]">${p.name}</span>
                   <span class="text-xs font-semibold px-2 py-0.5 rounded-full ml-1.5 ${ageBg}">${p.age}</span>
                 </div>
-                <span class="text-xs text-gray-400 flex-shrink-0">${p.compatibility}% match</span>
+                <div class="flex-shrink-0" title="${p.compatibility}% match">
+                  <svg viewBox="0 0 36 36" width="40" height="40" aria-label="${p.compatibility}% match">
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f3f4f6" stroke-width="3"/>
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="${p.color}" stroke-width="3"
+                      stroke-dasharray="${p.compatibility} 100"
+                      stroke-linecap="round"
+                      transform="rotate(-90 18 18)"/>
+                    <text x="18" y="21.5" text-anchor="middle"
+                          style="font-size:8px;font-weight:800;font-family:Inter,sans-serif;fill:#2C3E50">${p.compatibility}</text>
+                  </svg>
+                </div>
               </div>
 
               <!-- Matching skills -->
@@ -1137,14 +1201,27 @@
       }).join('');
     }
 
+    function applyFilters() {
+      const query = (document.getElementById('skill-search')?.value || '').toLowerCase().trim();
+      let results = currentFilter === 'all'
+        ? computedProfiles
+        : computedProfiles.filter(p => {
+            const catSkills = skillCategories[currentFilter] || [];
+            return [...p.teaches, ...p.wants].some(s => catSkills.includes(s));
+          });
+      if (query) {
+        results = results.filter(p =>
+          [...p.teaches, ...p.wants].some(s => s.toLowerCase().includes(query))
+        );
+      }
+      renderMatchCards(results);
+    }
+
     function filterMatches(category, btn) {
       currentFilter = category;
       document.querySelectorAll('.category-tile').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      const filtered = category === 'all'
-        ? computedProfiles
-        : computedProfiles.filter(p => p.categories.includes(category));
-      renderMatchCards(filtered);
+      applyFilters();
     }
 
 function reportProfile(id) {
