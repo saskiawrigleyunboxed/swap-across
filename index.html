@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swap Across</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'sa-orange': '#E8793A',
+            'sa-teal': '#3DBFBF',
+            'sa-dark': '#2C3E50',
+            'sa-cream': '#F8F6F3',
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+
+    .fade-in { animation: fadeIn 0.4s ease both; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Skill chips */
+    .skill-chip { cursor: pointer; transition: all 0.15s ease; user-select: none; }
+    .skill-chip.selected { background: #E8793A !important; color: white !important; border-color: #E8793A !important; }
+    .skill-chip:hover:not(.selected) { border-color: #E8793A; color: #E8793A; }
+
+    /* Filter buttons */
+    .filter-btn { transition: all 0.15s ease; cursor: pointer; }
+    .filter-btn.active { background: #E8793A !important; color: white !important; }
+
+    /* Cards */
+    .profile-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .profile-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+    .meetup-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .meetup-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+
+    /* Compatibility bar */
+    .bar-fill { transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    /* Toast */
+    #toast { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(120px); opacity: 0; pointer-events: none; }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    /* Avatar picker */
+    .avatar-option { cursor: pointer; transition: transform 0.15s ease; }
+    .avatar-option:hover { transform: scale(1.08); }
+    .avatar-option.selected .av-ring { box-shadow: 0 0 0 3px white, 0 0 0 5px #E8793A; }
+
+    /* Nav links */
+    .nav-link { transition: color 0.15s ease; }
+    .nav-link.active { color: #E8793A !important; font-weight: 600; }
+
+    /* Inputs */
+    input, textarea {
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    input:focus, textarea:focus {
+      border-color: #E8793A !important;
+      box-shadow: 0 0 0 3px rgba(232,121,58,0.15);
+    }
+
+    /* Step line */
+    .step-line { transition: background 0.3s ease; }
+
+    /* How-it-works icon boxes */
+    .how-box { transition: transform 0.2s ease; }
+    .how-box:hover { transform: translateY(-4px); }
+  </style>
+</head>
+<body class="bg-[#F8F6F3] text-[#2C3E50] min-h-screen">
+
+  <!-- ═══════════════════════ TOAST ═══════════════════════ -->
+  <div id="toast"
+       class="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 bg-[#2C3E50] text-white px-6 py-3.5 rounded-full text-sm font-medium shadow-2xl flex items-center gap-2.5 whitespace-nowrap">
+    <span id="toast-msg">Done!</span>
+  </div>
+
+  <!-- ═══════════════════════ NAV ═══════════════════════ -->
+  <nav id="main-nav"
+       class="hidden fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-6 py-4">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <button onclick="showScreen('matches')" class="flex items-center gap-2.5 group">
+        <img src="Swap Across Logo.jpeg" alt="Swap Across logo" class="w-10 h-10 rounded-lg object-contain bg-white">
+        <span class="font-bold text-[#2C3E50] text-lg group-hover:text-[#E8793A] transition-colors">Swap Across</span>
+      </button>
+      <div class="flex items-center gap-7">
+        <button onclick="showScreen('matches')" id="nav-matches"
+                class="nav-link text-gray-500 text-sm font-medium hover:text-[#E8793A]">Matches</button>
+        <button onclick="showScreen('meetups')" id="nav-meetups"
+                class="nav-link text-gray-500 text-sm font-medium hover:text-[#E8793A]">Meetups</button>
+        <div id="nav-profile" class="hidden items-center gap-2">
+          <div id="nav-avatar"
+               class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+          </div>
+          <span id="nav-name" class="text-sm font-medium text-[#2C3E50]"></span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- ═══════════════════════ LANDING ═══════════════════════ -->
+  <section id="screen-landing">
+
+    <!-- Hero -->
+    <div class="min-h-screen flex flex-col justify-center relative overflow-hidden">
+      <!-- Decorative blobs -->
+      <div class="absolute top-0 right-0 w-96 h-96 bg-[#3DBFBF]/8 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/3"></div>
+      <div class="absolute bottom-0 left-0 w-80 h-80 bg-[#E8793A]/8 rounded-full blur-3xl pointer-events-none translate-y-1/2 -translate-x-1/3"></div>
+
+      <div class="max-w-6xl mx-auto px-6 py-20 w-full flex flex-col lg:flex-row items-center gap-14">
+
+        <!-- Left: text -->
+        <div class="flex-1 fade-in">
+          <!-- Logo -->
+          <div class="flex items-center gap-3 mb-10">
+            <img src="Swap Across Logo.jpeg" alt="Swap Across logo" class="w-16 h-16 rounded-lg object-contain bg-white">
+            <span class="font-black text-[#2C3E50] text-xl tracking-tight">Swap Across</span>
+          </div>
+
+          <h1 class="text-5xl lg:text-6xl font-black leading-[1.1] text-[#2C3E50] mb-6">
+            Trade skills.<br>
+            <span class="text-[#E8793A]">Make connections.</span><br>
+            Cross the divide.
+          </h1>
+          <p class="text-lg text-gray-500 mb-10 max-w-md leading-relaxed">
+            Every generation has something to offer. Swap Across matches you with someone from a different generation. You share what you know. They share what they know.
+          </p>
+
+          <button onclick="showScreen('onboarding')"
+                  class="inline-flex items-center gap-2 bg-[#E8793A] text-white px-8 py-4 rounded-full text-base font-semibold hover:bg-[#d4692b] transition-colors shadow-lg shadow-[#E8793A]/25">
+            Get Started
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <!-- Stats row -->
+          <div class="mt-12 flex flex-wrap gap-6">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl font-black text-[#E8793A]">15%</span>
+              <span class="text-xs text-gray-400 leading-tight max-w-[120px]">of Gen Z stressed about finances</span>
+            </div>
+            <div class="w-px bg-gray-200 self-stretch hidden sm:block"></div>
+            <div class="flex items-center gap-2">
+              <span class="text-2xl font-black text-[#3DBFBF]">25%</span>
+              <span class="text-xs text-gray-400 leading-tight max-w-[120px]">over 65s don't use the internet</span>
+            </div>
+            <div class="w-px bg-gray-200 self-stretch hidden sm:block"></div>
+            <div class="flex items-center gap-2">
+              <span class="text-2xl font-black text-[#2C3E50]">50%</span>
+              <span class="text-xs text-gray-400 leading-tight max-w-[120px]">longer life with social connection</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: stacked card preview -->
+        <div class="flex-1 flex justify-center items-center">
+          <div class="relative w-72 h-72">
+            <!-- Back card -->
+            <div class="absolute top-8 left-8 right-0 h-56 bg-white rounded-2xl shadow-md opacity-40 rotate-6"></div>
+            <!-- Middle card -->
+            <div class="absolute top-4 left-4 right-0 h-56 bg-white rounded-2xl shadow-md opacity-70 rotate-3"></div>
+            <!-- Front card -->
+            <div class="relative bg-white rounded-2xl shadow-xl overflow-hidden">
+              <div class="h-1.5 bg-[#3DBFBF]"></div>
+              <div class="p-5">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-12 h-12 rounded-full bg-[#3DBFBF] flex items-center justify-center text-white font-black text-lg flex-shrink-0">L</div>
+                  <div class="flex-1">
+                    <div class="font-bold text-[#2C3E50] text-base">Liz, 60</div>
+                    <div class="text-xs text-gray-400">Stoke Newington</div>
+                  </div>
+                  <div class="bg-[#E8793A]/10 text-[#E8793A] text-sm font-black px-2.5 py-1 rounded-full">94%</div>
+                </div>
+                <div class="mb-2.5">
+                  <span class="text-xs text-gray-400 uppercase tracking-wide font-medium block mb-1.5">Teaches</span>
+                  <div class="flex gap-1 flex-wrap">
+                    <span class="text-xs bg-[#3DBFBF]/10 text-[#3DBFBF] px-2.5 py-0.5 rounded-full font-medium">Gardening</span>
+                    <span class="text-xs bg-[#3DBFBF]/10 text-[#3DBFBF] px-2.5 py-0.5 rounded-full font-medium">Cooking</span>
+                  </div>
+                </div>
+                <div class="mb-4">
+                  <span class="text-xs text-gray-400 uppercase tracking-wide font-medium block mb-1.5">Wants to learn</span>
+                  <span class="text-xs bg-[#E8793A]/10 text-[#E8793A] px-2.5 py-0.5 rounded-full font-medium">Social Media</span>
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-[#E8793A] h-1.5 rounded-full" style="width:94%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="bg-white py-24">
+      <div class="max-w-4xl mx-auto px-6">
+        <h2 class="text-3xl font-black text-center text-[#2C3E50] mb-3">How it works</h2>
+        <p class="text-center text-gray-400 mb-16 text-base">Three steps to your first skill swap</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div class="how-box text-center">
+            <div class="w-16 h-16 bg-[#E8793A]/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <span class="text-2xl font-black text-[#E8793A]">01</span>
+            </div>
+            <h3 class="font-bold text-[#2C3E50] mb-2 text-base">Tell us your skills</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">Share what you know and what you want to learn. Every skill counts.</p>
+          </div>
+          <div class="how-box text-center">
+            <div class="w-16 h-16 bg-[#3DBFBF]/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <span class="text-2xl font-black text-[#3DBFBF]">02</span>
+            </div>
+            <h3 class="font-bold text-[#2C3E50] mb-2 text-base">Get matched</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">We find your best match based on what you can both offer each other.</p>
+          </div>
+          <div class="how-box text-center">
+            <div class="w-16 h-16 bg-[#F0B429]/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <span class="text-2xl font-black text-[#F0B429]">03</span>
+            </div>
+            <h3 class="font-bold text-[#2C3E50] mb-2 text-base">Meet up &amp; swap</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">Meet at a local coffee shop or online. Start sharing skills and making new connections.</p>
+          </div>
+        </div>
+        <div class="mt-16 text-center">
+          <button onclick="showScreen('onboarding')"
+                  class="inline-flex items-center gap-2 bg-[#2C3E50] text-white px-8 py-4 rounded-full text-base font-semibold hover:bg-[#1a252f] transition-colors">
+            Find your match
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </section><!-- /landing -->
+
+
+  <!-- ═══════════════════════ ONBOARDING ═══════════════════════ -->
+  <section id="screen-onboarding" class="hidden min-h-screen flex items-center justify-center py-16 px-6">
+    <div class="w-full max-w-xl">
+
+      <!-- Back to landing -->
+      <button onclick="showScreen('landing')" class="flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#E8793A] transition-colors mb-8">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M16 10H4M9 5l-5 5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back
+      </button>
+
+      <!-- Step dots -->
+      <div class="flex items-center justify-center gap-0 mb-10">
+        <div id="dot-1" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-[#E8793A] text-white">1</div>
+        <div id="line-1" class="step-line h-0.5 w-12 bg-gray-200"></div>
+        <div id="dot-2" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 text-gray-400">2</div>
+        <div id="line-2" class="step-line h-0.5 w-12 bg-gray-200"></div>
+        <div id="dot-3" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 text-gray-400">3</div>
+      </div>
+
+      <!-- ── Step 1 ── -->
+      <div id="step-1" class="fade-in">
+        <h2 class="text-3xl font-black text-[#2C3E50] mb-1.5">Set up your profile</h2>
+        <p class="text-gray-400 mb-8">Tell us a bit about yourself.</p>
+
+        <div class="space-y-4 mb-7">
+          <div>
+            <label for="input-name" class="block text-sm font-semibold text-[#2C3E50] mb-1.5">Your first name *</label>
+            <input id="input-name" type="text" placeholder="e.g. Emily"
+                   class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-base bg-white">
+          </div>
+          <div>
+            <label for="input-age" class="block text-sm font-semibold text-[#2C3E50] mb-1.5">Your age</label>
+            <input id="input-age" type="number" placeholder="e.g. 22" min="16" max="100"
+                   class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-base bg-white">
+          </div>
+          <div>
+            <label for="input-bio" class="block text-sm font-semibold text-[#2C3E50] mb-1.5">
+              Short bio <span class="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <textarea id="input-bio" rows="3" placeholder="Tell us a bit about yourself..."
+                      class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-base bg-white resize-none"></textarea>
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <p class="text-sm font-semibold text-[#2C3E50] mb-3">Choose your avatar</p>
+          <div id="avatar-grid" class="grid grid-cols-4 gap-3">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+
+        <button onclick="goStep2()"
+                class="w-full bg-[#E8793A] text-white py-4 rounded-xl font-semibold text-base hover:bg-[#d4692b] transition-colors flex items-center justify-center gap-2">
+          Continue
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- ── Step 2 ── -->
+      <div id="step-2" class="hidden fade-in">
+        <h2 class="text-3xl font-black text-[#2C3E50] mb-1.5">What can you offer?</h2>
+        <p class="text-gray-400 mb-8">Choose the skills you are happy to share. You can pick more than one.</p>
+
+        <div id="skills-have-grid" class="flex flex-wrap gap-2 mb-8">
+          <!-- Filled by JS -->
+        </div>
+
+        <button onclick="goStep3()"
+                class="w-full bg-[#E8793A] text-white py-4 rounded-xl font-semibold text-base hover:bg-[#d4692b] transition-colors flex items-center justify-center gap-2">
+          Continue
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- ── Step 3 ── -->
+      <div id="step-3" class="hidden fade-in">
+        <h2 class="text-3xl font-black text-[#2C3E50] mb-1.5">What do you want to learn?</h2>
+        <p class="text-gray-400 mb-8">Choose the skills you would like to learn.</p>
+
+        <div id="skills-want-grid" class="flex flex-wrap gap-2 mb-8">
+          <!-- Filled by JS -->
+        </div>
+
+        <button onclick="findMatches()"
+                class="w-full bg-[#E8793A] text-white py-4 rounded-xl font-semibold text-base hover:bg-[#d4692b] transition-colors flex items-center justify-center gap-2">
+          Find my matches
+        </button>
+      </div>
+
+    </div>
+  </section><!-- /onboarding -->
+
+
+  <!-- ═══════════════════════ MATCHES ═══════════════════════ -->
+  <section id="screen-matches" class="hidden pt-24 pb-20 px-6">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="mb-8 fade-in">
+        <h2 id="matches-heading" class="text-3xl font-black text-[#2C3E50] mb-2">Your matches</h2>
+        <p id="matches-subheading" class="text-gray-400 mb-6 text-sm">Based on what you can teach and what you want to learn</p>
+
+        <!-- Filter chips -->
+        <div class="flex flex-wrap gap-2">
+          <button class="filter-btn active px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-600"
+                  onclick="filterMatches('all', this)">All</button>
+          <button class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-600"
+                  onclick="filterMatches('tech', this)">Tech &amp; Digital</button>
+          <button class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-600"
+                  onclick="filterMatches('life', this)">Life Skills</button>
+          <button class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-600"
+                  onclick="filterMatches('creative', this)">Creative</button>
+          <button class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-600"
+                  onclick="filterMatches('finance', this)">Finance &amp; Career</button>
+        </div>
+      </div>
+
+      <div id="matches-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Rendered by JS -->
+      </div>
+
+    </div>
+  </section><!-- /matches -->
+
+
+  <!-- ═══════════════════════ MEETUPS ═══════════════════════ -->
+  <section id="screen-meetups" class="hidden pt-24 pb-20 px-6">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="mb-10 fade-in">
+        <h2 class="text-3xl font-black text-[#2C3E50] mb-2">Upcoming Swap Across events</h2>
+        <p class="text-gray-400">Grab a coffee. Trade a skill. Make a friend.</p>
+      </div>
+
+      <div id="meetups-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="mt-14 bg-white rounded-2xl p-10 text-center border border-gray-100">
+        <div class="flex justify-center mb-4">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <circle cx="20" cy="18" r="9" stroke="#E8793A" stroke-width="2.5"/>
+            <circle cx="20" cy="18" r="3" fill="#E8793A"/>
+            <path d="M20 27c0 0-12 8-12 0" stroke="#E8793A" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M20 27c0 0 12 8 12 0" stroke="#E8793A" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-[#2C3E50] mb-2">Host a Swap Across event</h3>
+        <p class="text-gray-400 mb-6 max-w-md mx-auto text-sm leading-relaxed">
+          We can help you set up a meetup at your local coffee shop. We will help you find people and spread the word.
+        </p>
+        <button onclick="showToast('Thanks. We will be in touch soon.')"
+                class="inline-flex items-center gap-2 bg-[#2C3E50] text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-[#1a252f] transition-colors">
+          Get in touch
+        </button>
+      </div>
+
+    </div>
+  </section><!-- /meetups -->
+
+
+  <!-- ═══════════════════════ JAVASCRIPT ═══════════════════════ -->
+  <script>
+
+    // ──────────────────────────────
+    //  DATA
+    // ──────────────────────────────
+
+    const allSkills = [
+      'Social Media', 'Photography', 'Coding', 'Cooking',
+      'Music', 'Languages', 'Fitness', 'Graphic Design',
+      'DIY & Home Repairs', 'Financial Advice', 'Writing', 'Driving', 'Gardening'
+    ];
+
+    const avatarOptions = [
+      { bg: '#F48FB1' },
+      { bg: '#3DBFBF' },
+      { bg: '#A0785A' },
+      { bg: '#E8793A' },
+      { bg: '#5B9BD5' },
+      { bg: '#F0B429' },
+      { bg: '#9B59B6' },
+      { bg: '#27AE60' },
+    ];
+
+    const profiles = [
+      {
+        id: 1, name: 'Emily', age: 21, color: '#3DBFBF', initial: 'E',
+        teaches: ['Social Media', 'Photography'],
+        wants:   ['Financial Advice', 'Cooking', 'DIY & Home Repairs'],
+        bio: 'Design student who loves photography and TikTok. Ready to swap digital skills for real-life ones.',
+        categories: ['tech', 'creative']
+      },
+      {
+        id: 2, name: 'Jake', age: 23, color: '#E8793A', initial: 'J',
+        teaches: ['Coding', 'Graphic Design'],
+        wants:   ['Cooking', 'DIY & Home Repairs', 'Driving'],
+        bio: 'Software developer by day. Ready to swap tech skills for life skills — please teach me to cook.',
+        categories: ['tech', 'creative']
+      },
+      {
+        id: 3, name: 'Priya', age: 22, color: '#9B59B6', initial: 'P',
+        teaches: ['Languages', 'Writing'],
+        wants:   ['Financial Advice', 'Driving', 'Coding'],
+        bio: 'Languages student — fluent in Spanish and French. Terrible with money but great with words.',
+        categories: ['creative', 'finance']
+      },
+      {
+        id: 4, name: 'Marcus', age: 25, color: '#27AE60', initial: 'M',
+        teaches: ['Fitness', 'Social Media'],
+        wants:   ['Cooking', 'Financial Advice', 'Music'],
+        bio: 'Personal trainer in training. Always on Instagram. Would love to learn to cook properly.',
+        categories: ['tech', 'life']
+      },
+      {
+        id: 5, name: 'Liz', age: 60, color: '#E8793A', initial: 'L',
+        teaches: ['Gardening', 'Cooking', 'Writing'],
+        wants:   ['Social Media', 'Photography', 'Coding'],
+        bio: 'Retired nurse with a gorgeous garden. Would love to get to grips with Instagram and share my recipes.',
+        categories: ['life', 'creative', 'tech']
+      },
+      {
+        id: 6, name: 'Sam', age: 72, color: '#5B9BD5', initial: 'S',
+        teaches: ['Financial Advice', 'DIY & Home Repairs', 'Driving'],
+        wants:   ['Social Media', 'Coding', 'Photography'],
+        bio: 'Former accountant. I can help with finances, fix anything around the house, and have been driving for 50 years!',
+        categories: ['finance', 'life', 'tech']
+      },
+      {
+        id: 7, name: 'Tom', age: 81, color: '#E74C3C', initial: 'T',
+        teaches: ['Music', 'Writing', 'Cooking'],
+        wants:   ['Social Media', 'Coding'],
+        bio: 'Retired music teacher. Still play guitar every day. Would love to video call my grandchildren more easily.',
+        categories: ['creative', 'life', 'tech']
+      },
+      {
+        id: 8, name: 'Martha', age: 64, color: '#F0B429', initial: 'M',
+        teaches: ['Cooking', 'Financial Advice', 'Gardening'],
+        wants:   ['Social Media', 'Coding', 'Photography'],
+        bio: 'Local community organiser who knows everyone. Love cooking, gardening, and bringing people together.',
+        categories: ['life', 'finance', 'tech']
+      },
+      {
+        id: 9, name: 'Nick', age: 65, color: '#2C3E50', initial: 'N',
+        teaches: ['Financial Advice', 'Driving', 'Fitness'],
+        wants:   ['Social Media', 'Graphic Design', 'Photography'],
+        bio: 'Semi-retired business owner. Happy to share financial wisdom and help with confidence at work.',
+        categories: ['finance', 'life', 'tech']
+      },
+      {
+        id: 10, name: 'Bertha', age: 74, color: '#8E44AD', initial: 'B',
+        teaches: ['Languages', 'Writing', 'Cooking'],
+        wants:   ['Coding', 'Social Media', 'Photography'],
+        bio: 'Former French teacher. Still sharp as a tack! Want to use my phone and computer better.',
+        categories: ['creative', 'life', 'tech']
+      }
+    ];
+
+    const meetups = [
+      {
+        id: 1,
+        name: 'Swap Across: Stoke Newington',
+        venue: 'The Good Bean Café',
+        address: 'Church Street, N16',
+        date: 'Thursday 3 April, 6:30pm',
+        skillsFocus: 'Tech & Digital',
+        spots: 8,
+        color: '#3DBFBF',
+        joined: false
+      },
+      {
+        id: 2,
+        name: 'Swap Across: Brixton',
+        venue: 'Federation Coffee',
+        address: 'Brixton Village Market, SW9',
+        date: 'Thursday 10 April, 6:30pm',
+        skillsFocus: 'Life Skills',
+        spots: 12,
+        color: '#E8793A',
+        joined: false
+      },
+      {
+        id: 3,
+        name: 'Swap Across: Camden',
+        venue: 'Coffee Affair',
+        address: 'Camden Passage, Islington N1',
+        date: 'Thursday 17 April, 6:30pm',
+        skillsFocus: 'Creative Skills',
+        spots: 10,
+        color: '#9B59B6',
+        joined: false
+      },
+      {
+        id: 4,
+        name: 'Swap Across: Hackney',
+        venue: 'E5 Roasthouse',
+        address: 'Arch 395, Mentmore Terrace E8',
+        date: 'Thursday 24 April, 6:30pm',
+        skillsFocus: 'Finance & Careers',
+        spots: 8,
+        color: '#F0B429',
+        joined: false
+      },
+      {
+        id: 5,
+        name: 'Swap Across: Peckham',
+        venue: "Peckham Levels Café",
+        address: "Frank's Café, Rye Lane SE15",
+        date: 'Thursday 1 May, 6:30pm',
+        skillsFocus: 'Mixed Skills',
+        spots: 15,
+        color: '#E74C3C',
+        joined: false
+      }
+    ];
+
+
+    // ──────────────────────────────
+    //  STATE
+    // ──────────────────────────────
+
+    let userProfile = {
+      name: '',
+      age: '',
+      bio: '',
+      avatar: avatarOptions[0],
+      skillsHave: [],
+      skillsWant: []
+    };
+
+    let computedProfiles = [];
+    let currentFilter = 'all';
+
+
+    // ──────────────────────────────
+    //  SCREEN NAVIGATION
+    // ──────────────────────────────
+
+    function showScreen(name) {
+      ['landing', 'onboarding', 'matches', 'meetups'].forEach(s => {
+        const el = document.getElementById('screen-' + s);
+        if (el) el.classList.toggle('hidden', s !== name);
+      });
+
+      const nav = document.getElementById('main-nav');
+      if (name === 'matches' || name === 'meetups') {
+        nav.classList.remove('hidden');
+      } else {
+        nav.classList.add('hidden');
+      }
+
+      // Update nav active state
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      const activeLink = document.getElementById('nav-' + name);
+      if (activeLink) activeLink.classList.add('active');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+
+    // ──────────────────────────────
+    //  ONBOARDING — Avatar
+    // ──────────────────────────────
+
+    function renderAvatarGrid() {
+      document.getElementById('avatar-grid').innerHTML = avatarOptions.map((av, i) => `
+        <div class="avatar-option flex flex-col items-center" onclick="selectAvatar(${i})">
+          <div id="av-${i}" class="av-ring w-14 h-14 rounded-full
+               ${i === 0 ? 'ring-2 ring-[#E8793A] ring-offset-2' : ''}"
+               style="background:${av.bg}">
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectAvatar(index) {
+      userProfile.avatar = avatarOptions[index];
+      avatarOptions.forEach((_, i) => {
+        const el = document.getElementById('av-' + i);
+        if (el) {
+          el.classList.toggle('ring-2', i === index);
+          el.classList.toggle('ring-[#E8793A]', i === index);
+          el.classList.toggle('ring-offset-2', i === index);
+        }
+      });
+    }
+
+
+    // ──────────────────────────────
+    //  ONBOARDING — Skills
+    // ──────────────────────────────
+
+    function renderSkillsGrid(containerId, listName, excludeList = []) {
+      const selectedList = listName === 'have' ? userProfile.skillsHave : userProfile.skillsWant;
+      document.getElementById(containerId).innerHTML = allSkills
+        .filter(s => !excludeList.includes(s))
+        .map(skill => `
+          <button class="skill-chip border-2 border-gray-200 rounded-full px-4 py-2 text-sm font-medium text-gray-600 bg-white
+                         ${selectedList.includes(skill) ? 'selected' : ''}"
+                  onclick="toggleSkill('${skill.replace(/&/g,'&amp;').replace(/'/g,'&#39;')}', '${listName}', this)">
+            ${skill}
+          </button>
+        `).join('');
+    }
+
+    function toggleSkill(skill, listName, el) {
+      const arr = listName === 'have' ? userProfile.skillsHave : userProfile.skillsWant;
+      const idx = arr.indexOf(skill);
+      if (idx === -1) { arr.push(skill); el.classList.add('selected'); }
+      else            { arr.splice(idx, 1); el.classList.remove('selected'); }
+    }
+
+
+    // ──────────────────────────────
+    //  ONBOARDING — Step flow
+    // ──────────────────────────────
+
+    function updateStepDots(step) {
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById('dot-' + i);
+        if (i < step) {
+          dot.className = 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-[#3DBFBF] text-white';
+          dot.textContent = '✓';
+        } else if (i === step) {
+          dot.className = 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-[#E8793A] text-white';
+          dot.textContent = i;
+        } else {
+          dot.className = 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 text-gray-400';
+          dot.textContent = i;
+        }
+      }
+      const line1 = document.getElementById('line-1');
+      const line2 = document.getElementById('line-2');
+      line1.className = 'step-line h-0.5 w-12 ' + (step > 1 ? 'bg-[#3DBFBF]' : 'bg-gray-200');
+      line2.className = 'step-line h-0.5 w-12 ' + (step > 2 ? 'bg-[#3DBFBF]' : 'bg-gray-200');
+    }
+
+    function goStep2() {
+      const name = document.getElementById('input-name').value.trim();
+      if (!name) { showToast('Please enter your name'); return; }
+
+      userProfile.name = name;
+      userProfile.age  = document.getElementById('input-age').value;
+      userProfile.bio  = document.getElementById('input-bio').value;
+
+      document.getElementById('step-1').classList.add('hidden');
+      const s2 = document.getElementById('step-2');
+      s2.classList.remove('hidden');
+      s2.classList.add('fade-in');
+
+      renderSkillsGrid('skills-have-grid', 'have');
+      updateStepDots(2);
+    }
+
+    function goStep3() {
+      if (userProfile.skillsHave.length === 0) {
+        showToast('Please select at least one skill you can share');
+        return;
+      }
+      document.getElementById('step-2').classList.add('hidden');
+      const s3 = document.getElementById('step-3');
+      s3.classList.remove('hidden');
+      s3.classList.add('fade-in');
+
+      renderSkillsGrid('skills-want-grid', 'want', userProfile.skillsHave);
+      updateStepDots(3);
+    }
+
+    function findMatches() {
+      if (userProfile.skillsWant.length === 0) {
+        showToast('Please select at least one skill you want to learn');
+        return;
+      }
+
+      // Calculate compatibility
+      computedProfiles = profiles
+        .map(p => ({ ...p, compatibility: calcCompatibility(userProfile.skillsHave, userProfile.skillsWant, p) }))
+        .sort((a, b) => b.compatibility - a.compatibility);
+
+      // Update heading
+      document.getElementById('matches-heading').textContent =
+        `Your matches, ${userProfile.name}`;
+      document.getElementById('matches-subheading').textContent =
+        `Teaching: ${userProfile.skillsHave.join(', ')} · Looking to learn: ${userProfile.skillsWant.join(', ')}`;
+
+      // Show profile chip in nav
+      const navProfile = document.getElementById('nav-profile');
+      const navAvatar  = document.getElementById('nav-avatar');
+      const navName    = document.getElementById('nav-name');
+      navAvatar.style.background = userProfile.avatar.bg;
+      navAvatar.textContent = userProfile.name.charAt(0).toUpperCase();
+      navName.textContent   = userProfile.name;
+      navProfile.classList.remove('hidden');
+      navProfile.classList.add('flex');
+
+      // Reset filter to 'All'
+      currentFilter = 'all';
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.filter-btn').classList.add('active');
+
+      showScreen('matches');
+      renderMatchCards(computedProfiles);
+    }
+
+
+    // ──────────────────────────────
+    //  COMPATIBILITY
+    // ──────────────────────────────
+
+    function calcCompatibility(have, want, profile) {
+      const canTeachMe = want.filter(s => profile.teaches.includes(s)).length;
+      const iCanTeach  = have.filter(s => profile.wants.includes(s)).length;
+      const maxPossible = Math.max(want.length + have.length, 1);
+      const matched     = canTeachMe + iCanTeach;
+      // 35% base, up to 60% from skill match, small per-profile variety
+      const variety = ((profile.id * 7) % 5) - 2; // -2 to +2
+      return Math.min(98, Math.max(35, Math.round(35 + (matched / maxPossible) * 60 + variety)));
+    }
+
+
+    // ──────────────────────────────
+    //  MATCH CARDS
+    // ──────────────────────────────
+
+    function renderMatchCards(list) {
+      const grid = document.getElementById('matches-grid');
+
+      if (list.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-3 text-center py-20 text-gray-400">
+            <p class="text-base">No matches in this category. Try a different filter.</p>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = list.map(p => {
+        const isYoung  = p.age < 40;
+        const ageBg    = isYoung ? 'bg-[#3DBFBF]/10 text-[#3DBFBF]' : 'bg-[#E8793A]/10 text-[#E8793A]';
+        const barColor = p.compatibility >= 75 ? '#E8793A' : p.compatibility >= 55 ? '#F0B429' : '#3DBFBF';
+
+        return `
+          <div class="profile-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col">
+            <div class="h-1.5" style="background:${p.color}"></div>
+            <div class="p-5 flex-1 flex flex-col">
+
+              <!-- Header -->
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-black text-lg"
+                     style="background:${p.color}">${p.initial}</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-bold text-[#2C3E50]">${p.name}</span>
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${ageBg}">${p.age}</span>
+                  </div>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <div class="text-lg font-black leading-none" style="color:${barColor}">${p.compatibility}%</div>
+                  <div class="text-xs text-gray-400">match</div>
+                </div>
+              </div>
+
+              <!-- Compatibility bar -->
+              <div class="w-full bg-gray-100 rounded-full h-1.5 mb-4 overflow-hidden">
+                <div class="bar-fill h-1.5 rounded-full" style="background:${barColor}; width:0%"
+                     data-target="${p.compatibility}%"></div>
+              </div>
+
+              <!-- Teaches -->
+              <div class="mb-2.5">
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wide block mb-1.5">Teaches</span>
+                <div class="flex flex-wrap gap-1">
+                  ${p.teaches.map(s => `<span class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-[#3DBFBF]/10 text-[#3DBFBF]">${s}</span>`).join('')}
+                </div>
+              </div>
+
+              <!-- Wants -->
+              <div class="mb-3">
+                <span class="text-xs text-gray-400 font-medium uppercase tracking-wide block mb-1.5">Wants to learn</span>
+                <div class="flex flex-wrap gap-1">
+                  ${p.wants.map(s => `<span class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-[#E8793A]/10 text-[#E8793A]">${s}</span>`).join('')}
+                </div>
+              </div>
+
+              <!-- Bio -->
+              <p class="text-sm text-gray-400 leading-relaxed mb-4 flex-1">${p.bio}</p>
+
+              <!-- Connect -->
+              <button id="connect-${p.id}" onclick="connectWith(${p.id}, '${p.name}')"
+                      class="w-full bg-[#2C3E50] text-white py-2.5 rounded-xl text-sm font-semibold
+                             hover:bg-[#1a252f] transition-colors">
+                Send a request
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+
+      // Animate bars
+      setTimeout(() => {
+        document.querySelectorAll('.bar-fill').forEach(bar => {
+          bar.style.width = bar.dataset.target;
+        });
+      }, 80);
+    }
+
+    function filterMatches(category, btn) {
+      currentFilter = category;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filtered = category === 'all'
+        ? computedProfiles
+        : computedProfiles.filter(p => p.categories.includes(category));
+      renderMatchCards(filtered);
+    }
+
+    function connectWith(id, name) {
+      const btn = document.getElementById('connect-' + id);
+      if (!btn || btn.disabled) return;
+      btn.textContent = 'Request sent';
+      btn.classList.remove('bg-[#2C3E50]', 'hover:bg-[#1a252f]');
+      btn.classList.add('bg-[#3DBFBF]', 'cursor-default');
+      btn.disabled = true;
+      showToast(`Request sent to ${name}. They will be in touch soon.`);
+    }
+
+
+    // ──────────────────────────────
+    //  MEETUPS
+    // ──────────────────────────────
+
+    function renderMeetups() {
+      document.getElementById('meetups-grid').innerHTML = meetups.map(m => `
+        <div class="meetup-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col">
+          <div class="h-1.5" style="background:${m.color}"></div>
+          <div class="p-5 flex-1 flex flex-col">
+
+            <div class="flex items-start justify-between gap-2 mb-4">
+              <h3 class="font-bold text-[#2C3E50] text-base leading-snug">${m.name}</h3>
+              <span class="text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0"
+                    style="background:${m.color}22; color:${m.color}">${m.skillsFocus}</span>
+            </div>
+
+            <div class="space-y-2 mb-5 flex-1">
+              <div class="flex items-start gap-2 text-sm text-gray-500">
+                <svg class="flex-shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M8 1a5 5 0 015 5c0 3.5-5 9-5 9S3 9.5 3 6a5 5 0 015-5z" stroke="currentColor" stroke-width="1.5"/>
+                  <circle cx="8" cy="6" r="1.5" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <span>${m.venue}, ${m.address}</span>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-500">
+                <svg class="flex-shrink-0" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect x="1" y="3" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M1 7h14M5 1v4M11 1v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span>${m.date}</span>
+              </div>
+              <div class="flex items-center gap-2 text-sm font-medium" style="color:${m.color}">
+                <svg class="flex-shrink-0" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span>${m.spots} spots remaining</span>
+              </div>
+            </div>
+
+            <button id="join-btn-${m.id}" onclick="joinMeetup(${m.id})"
+                    class="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors
+                           border-2 hover:text-white"
+                    style="border-color:${m.color}; color:${m.color}; --hover-bg:${m.color}"
+                    onmouseover="this.style.background=this.style.borderColor"
+                    onmouseout="if(!this.disabled)this.style.background='transparent'">
+              Join this meetup
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function joinMeetup(id) {
+      const m = meetups.find(x => x.id === id);
+      if (!m || m.joined) return;
+      m.joined = true;
+
+      const btn = document.getElementById('join-btn-' + id);
+      btn.textContent = "You are signed up";
+      btn.style.background = '#3DBFBF';
+      btn.style.borderColor = '#3DBFBF';
+      btn.style.color = 'white';
+      btn.onmouseover = null;
+      btn.onmouseout  = null;
+      btn.disabled    = true;
+      btn.style.cursor = 'default';
+
+      showToast(`You are signed up for ${m.name}. See you there.`);
+    }
+
+
+    // ──────────────────────────────
+    //  TOAST
+    // ──────────────────────────────
+
+    let _toastTimer;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+
+    // ──────────────────────────────
+    //  INIT
+    // ──────────────────────────────
+
+    renderAvatarGrid();
+    updateStepDots(1);
+    renderMeetups();
+
+  </script>
+</body>
+</html>
