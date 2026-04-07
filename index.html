@@ -34,6 +34,10 @@
     .skill-chip { cursor: pointer; transition: all 0.15s ease; user-select: none; }
     .skill-chip.selected { background: #E8793A !important; color: white !important; border-color: #E8793A !important; }
     .skill-chip:hover:not(.selected) { border-color: #E8793A; color: #E8793A; }
+    /* Want chips (learn step) — teal selected state */
+    .skill-chip-want { cursor: pointer; transition: all 0.15s ease; user-select: none; }
+    .skill-chip-want.selected { background: #3DBFBF !important; color: white !important; border-color: #3DBFBF !important; }
+    .skill-chip-want:hover:not(.selected) { border-color: #3DBFBF; color: #3DBFBF; }
 
     /* Filter buttons (kept for any legacy use) */
     .filter-btn { transition: all 0.15s ease; cursor: pointer; }
@@ -97,6 +101,32 @@
     /* Leaflet map z-index fix */
     .leaflet-top, .leaflet-bottom { z-index: 30 !important; }
 
+    /* Messages: hide scrollbar on starter chips row */
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Chat input placeholder */
+    [contenteditable][data-placeholder]:empty::before {
+      content: attr(data-placeholder);
+      color: #9ca3af;
+      pointer-events: none;
+    }
+
+    /* Message bubbles */
+    .bubble-me {
+      background: #E8793A;
+      color: white;
+      border-radius: 18px 18px 4px 18px;
+      align-self: flex-end;
+    }
+    .bubble-them {
+      background: white;
+      color: #2C3E50;
+      border: 1px solid #f3f4f6;
+      border-radius: 18px 18px 18px 4px;
+      align-self: flex-start;
+    }
+
   </style>
 </head>
 <body class="bg-[#F8F6F3] text-[#2C3E50] min-h-screen">
@@ -109,10 +139,10 @@
 
   <!-- ═══════════════════════ NAV ═══════════════════════ -->
   <nav id="main-nav"
-       class="hidden fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-6 py-4">
+       class="hidden fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-6 py-3">
     <div class="max-w-6xl mx-auto flex items-center justify-between">
       <button onclick="showScreen('matches')" class="flex items-center gap-2.5 group">
-        <svg class="w-10 h-10 flex-shrink-0" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <svg class="w-9 h-9 flex-shrink-0" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="50" cy="12" r="7" fill="#E74C3C"/>
           <path fill="#E74C3C" d="M37.32 22.81 A30 30 0 0 1 62.68 22.81 L57.61 33.69 A18 18 0 0 0 42.39 33.69 Z"/>
           <circle cx="82.91" cy="31" r="7" fill="#E8793A"/>
@@ -128,16 +158,44 @@
         </svg>
         <span class="font-bold text-[#2C3E50] text-lg group-hover:text-[#E8793A] transition-colors">Swap Across</span>
       </button>
-      <div class="flex items-center gap-7">
+      <div class="flex items-center gap-5">
+        <!-- Matches nav -->
         <button onclick="showScreen('matches')" id="nav-matches"
-                class="nav-link text-gray-500 text-sm font-medium hover:text-[#E8793A]">Matches</button>
+                class="nav-link flex flex-col items-center gap-0.5 text-gray-400 hover:text-[#E8793A] transition-colors">
+          <svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="8" cy="7" r="3.5"/>
+            <path d="M2 19c0-3.3 2.7-6 6-6s6 2.7 6 6"/>
+            <circle cx="16" cy="7" r="2.5"/>
+            <path d="M20 19c0-2.5-1.8-4.5-4-5.3"/>
+          </svg>
+          <span class="text-[11px] font-medium">Matches</span>
+        </button>
+        <!-- Meetups nav -->
         <button onclick="showScreen('meetups')" id="nav-meetups"
-                class="nav-link text-gray-500 text-sm font-medium hover:text-[#E8793A]">Meetups</button>
-<button id="nav-profile" class="hidden items-center gap-2 hover:opacity-80 transition-opacity" onclick="showScreen('profile')">
+                class="nav-link flex flex-col items-center gap-0.5 text-gray-400 hover:text-[#E8793A] transition-colors">
+          <svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 2a7 7 0 0 1 7 7c0 5-7 13-7 13S4 14 4 9a7 7 0 0 1 7-7z"/>
+            <circle cx="11" cy="9" r="2.5"/>
+          </svg>
+          <span class="text-[11px] font-medium">Meetups</span>
+        </button>
+        <!-- Messages nav -->
+        <button onclick="showScreen('messages')" id="nav-messages"
+                class="nav-link flex flex-col items-center gap-0.5 text-gray-400 hover:text-[#E8793A] transition-colors relative">
+          <span class="relative">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 2H2a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h4l4 4 4-4h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/>
+            </svg>
+            <span id="nav-messages-dot" class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#E8793A] rounded-full hidden"></span>
+          </span>
+          <span class="text-[11px] font-medium">Messages</span>
+        </button>
+        <!-- Profile nav -->
+        <button id="nav-profile" class="hidden flex-col items-center gap-0.5 hover:opacity-80 transition-opacity" onclick="showScreen('profile')">
           <div id="nav-avatar"
                class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
           </div>
-          <span id="nav-name" class="text-sm font-medium text-[#2C3E50]"></span>
+          <span id="nav-name" class="text-[11px] font-medium text-[#2C3E50]"></span>
         </button>
       </div>
     </div>
@@ -475,11 +533,21 @@
 
       <!-- ── Step 2 ── -->
       <div id="step-2" class="hidden fade-in">
-        <h2 class="text-3xl font-black text-[#2C3E50] mb-1.5">What can you offer?</h2>
+        <h2 class="text-3xl font-black text-[#2C3E50] mb-1.5">What can you teach?</h2>
         <p class="text-gray-400 mb-8">Choose the skills you are happy to share. You can pick more than one.</p>
 
-        <div id="skills-have-grid" class="flex flex-wrap gap-2 mb-8">
+        <div id="skills-have-grid" class="flex flex-wrap gap-2 mb-4">
           <!-- Filled by JS -->
+        </div>
+
+        <div class="flex gap-2 mb-8">
+          <input id="custom-skill-have" type="text" placeholder="Add your own skill..."
+                 class="flex-1 border-2 border-gray-200 rounded-full px-4 py-2 text-sm bg-white focus:outline-none focus:border-[#E8793A]"
+                 onkeydown="if(event.key==='Enter'){addCustomSkill('have','custom-skill-have')}">
+          <button onclick="addCustomSkill('have','custom-skill-have')"
+                  class="border-2 border-gray-200 rounded-full px-4 py-2 text-sm font-medium text-gray-500 hover:border-[#E8793A] hover:text-[#E8793A] transition-colors whitespace-nowrap">
+            Add
+          </button>
         </div>
 
         <button onclick="goStep3()"
@@ -496,12 +564,22 @@
         <h2 class="text-3xl font-black text-[#2C3E50] mb-1.5">What do you want to learn?</h2>
         <p class="text-gray-400 mb-8">Choose the skills you would like to learn.</p>
 
-        <div id="skills-want-grid" class="flex flex-wrap gap-2 mb-8">
+        <div id="skills-want-grid" class="flex flex-wrap gap-2 mb-4">
           <!-- Filled by JS -->
         </div>
 
+        <div class="flex gap-2 mb-8">
+          <input id="custom-skill-want" type="text" placeholder="Add your own skill..."
+                 class="flex-1 border-2 border-gray-200 rounded-full px-4 py-2 text-sm bg-white focus:outline-none focus:border-[#3DBFBF]"
+                 onkeydown="if(event.key==='Enter'){addCustomSkill('want','custom-skill-want')}">
+          <button onclick="addCustomSkill('want','custom-skill-want')"
+                  class="border-2 border-gray-200 rounded-full px-4 py-2 text-sm font-medium text-gray-500 hover:border-[#3DBFBF] hover:text-[#3DBFBF] transition-colors whitespace-nowrap">
+            Add
+          </button>
+        </div>
+
         <button onclick="goStep4()"
-                class="w-full bg-[#E8793A] text-white py-4 rounded-xl font-semibold text-base hover:bg-[#d4692b] transition-colors flex items-center justify-center gap-2">
+                class="w-full bg-[#3DBFBF] text-white py-4 rounded-xl font-semibold text-base hover:bg-[#2ea8a8] transition-colors flex items-center justify-center gap-2">
           Continue
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -631,10 +709,12 @@
           <button class="category-tile" onclick="filterMatches('creative', this)">
             <div class="tile-icon-wrap">
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M14 3a11 11 0 100 22c2 0 3-1 3-3 0-.8-.3-1.5-.3-2.2 0-1.5 1.2-2.8 2.8-2.8H22a3 3 0 000-6"/>
-                <circle cx="9" cy="11" r="1.2" fill="currentColor" stroke="none"/>
-                <circle cx="14" cy="7" r="1.2" fill="currentColor" stroke="none"/>
-                <circle cx="19" cy="11" r="1.2" fill="currentColor" stroke="none"/>
+                <line x1="19" y1="5" x2="9" y2="19"/>
+                <path d="M9 19 Q6 21 7 23 Q9 24 11 21 L9 19Z"/>
+                <line x1="11" y1="17" x2="13" y2="15"/>
+                <line x1="21" y1="9" x2="21" y2="14"/>
+                <path d="M21 9 Q25 8 24 11"/>
+                <ellipse cx="20" cy="14" rx="2" ry="1.3" transform="rotate(-15 20 14)"/>
               </svg>
             </div>
             <span class="tile-label">Creative</span>
@@ -643,9 +723,10 @@
           <button class="category-tile" onclick="filterMatches('finance', this)">
             <div class="tile-icon-wrap">
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="10" cy="10" r="7"/>
-                <ellipse cx="10" cy="10" rx="7" ry="3"/>
-                <path d="M3 14c0 1.7 3.1 3 7 3s7-1.3 7-3M17 10c3.3.4 6 1.6 6 3v4c0 1.7-2.7 3-6 3"/>
+                <rect x="3" y="10" width="22" height="15" rx="2"/>
+                <path d="M10 10 V8 Q10 5 14 5 Q18 5 18 8 V10"/>
+                <line x1="3" y1="17" x2="25" y2="17"/>
+                <rect x="12" y="15" width="4" height="4" rx="1"/>
               </svg>
             </div>
             <span class="tile-label">Finance &amp; Career</span>
@@ -800,6 +881,174 @@
   </section><!-- /profile -->
 
 
+  <!-- ═══════════════════════ MESSAGES ═══════════════════════ -->
+  <section id="screen-messages" class="hidden pt-24 pb-20 min-h-screen bg-[#F8F6F3]">
+
+    <!-- ── VIEW A: Conversation list ── -->
+    <div id="messages-list-view" class="px-6">
+      <div class="max-w-lg mx-auto">
+
+        <!-- Heading + compose button -->
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-3xl font-black text-[#2C3E50]">Messages</h2>
+          <button onclick="showToast('Start a new conversation from the Matches screen.')"
+                  class="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-[#E8793A] transition-colors" title="New conversation" aria-label="New conversation">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M17 3a2.85 2.85 0 0 1 4 4L8.5 19.5 3 21l1.5-5.5L17 3z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Search bar -->
+        <div class="relative mb-5">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" aria-hidden="true">
+            <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M15 15l3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <input type="text" placeholder="Search messages"
+                 class="w-full bg-white border border-gray-200 rounded-2xl pl-10 pr-4 py-2.5 text-sm text-[#2C3E50] placeholder-gray-300 focus:outline-none focus:border-[#E8793A]/50 transition-colors"/>
+        </div>
+
+        <!-- Safety banner -->
+        <div class="bg-[#3DBFBF]/10 border border-[#3DBFBF]/20 rounded-2xl px-4 py-3 flex gap-3 items-start mb-5">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" class="flex-shrink-0 mt-0.5" aria-hidden="true">
+            <path d="M10 2L3 5v5c0 4 3.5 7.5 7 8.5C13.5 17.5 17 14 17 10V5l-7-3z" stroke="#3DBFBF" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+          <p class="text-xs text-[#2C3E50] leading-relaxed">
+            <strong>Keep it about skill swaps.</strong> Never share personal contact details or home addresses. First meetups should always be in a public venue.
+          </p>
+        </div>
+
+        <!-- Conversation list — flat rows in a white panel, rendered by JS -->
+        <div class="bg-white rounded-2xl overflow-hidden shadow-sm">
+          <div id="conversations-list"></div>
+          <!-- Empty state -->
+          <div id="messages-empty" class="hidden text-center py-16 px-6 text-gray-400">
+            <svg class="mx-auto mb-4" width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <rect x="4" y="8" width="32" height="22" rx="4" stroke="#d1d5db" stroke-width="2"/>
+              <path d="M4 14h32M12 22h8M12 26h5" stroke="#d1d5db" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <p class="text-base mb-2">No conversations yet</p>
+            <p class="text-sm">Send a request from the Matches screen to start a skill swap conversation.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── VIEW B: Open conversation ── -->
+    <div id="messages-chat-view" class="hidden flex flex-col" style="height: calc(100vh - 80px);">
+
+      <!-- Chat header -->
+      <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 flex-shrink-0">
+        <button onclick="showConversationList()" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors" aria-label="Back to messages">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M13 4l-6 6 6 6" stroke="#2C3E50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div id="chat-avatar" class="w-9 h-9 rounded-full flex items-center justify-center text-white font-black flex-shrink-0"></div>
+        <div class="flex-1 min-w-0">
+          <p id="chat-name" class="font-bold text-[#2C3E50] text-sm leading-none"></p>
+          <p id="chat-age-label" class="text-xs text-gray-400 mt-0.5"></p>
+          <p id="chat-skill-line" class="text-[11px] text-[#3DBFBF] mt-0.5 hidden font-medium"></p>
+        </div>
+        <div id="chat-swap-badge" class="hidden items-center gap-1.5 bg-[#3DBFBF]/10 text-[#3DBFBF] text-xs font-semibold px-3 py-1.5 rounded-full">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M2 7l3.5 3.5L12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Swap agreed
+        </div>
+        <!-- Overflow menu -->
+        <div class="relative flex-shrink-0" id="chat-overflow-wrap">
+          <button onclick="toggleChatMenu()" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors text-gray-300 hover:text-gray-500" aria-label="More options">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <circle cx="10" cy="5" r="1.3"/><circle cx="10" cy="10" r="1.3"/><circle cx="10" cy="15" r="1.3"/>
+            </svg>
+          </button>
+          <div id="chat-overflow-menu" class="hidden absolute right-0 top-9 bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-20 min-w-[140px]">
+            <button id="chat-report-btn" class="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-gray-50 transition-colors">Report member</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Swap proposal card -->
+      <div id="swap-proposal-card" class="hidden mx-4 mt-4 bg-white border-2 border-[#E8793A]/30 rounded-2xl p-4 flex-shrink-0">
+        <div class="flex items-center gap-2 mb-3">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M5 10h10M12 7l3 3-3 3M8 13l-3-3 3-3" stroke="#E8793A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <p class="text-sm font-bold text-[#E8793A]">Swap proposal</p>
+          <div id="proposal-agreed-badge" class="hidden ml-auto text-xs font-semibold text-[#3DBFBF] bg-[#3DBFBF]/10 px-2 py-0.5 rounded-full">Agreed</div>
+        </div>
+        <div class="flex items-center gap-2 text-sm">
+          <span id="proposal-you-teach" class="flex-1 bg-orange-50 text-[#E8793A] px-3 py-2 rounded-xl text-center font-medium"></span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 10l-4 4 4 4M17 10l4 4-4 4M14 6l-4 12" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span id="proposal-they-teach" class="flex-1 bg-teal-50 text-[#3DBFBF] px-3 py-2 rounded-xl text-center font-medium"></span>
+        </div>
+        <div id="proposal-actions" class="flex gap-2 mt-3">
+          <button onclick="agreeToSwap()" class="flex-1 bg-[#3DBFBF] text-white py-2 rounded-xl text-sm font-semibold hover:bg-[#2ea8a8] transition-colors">Agree to swap</button>
+          <button onclick="declineSwap()" class="flex-1 border border-gray-200 text-gray-500 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">Not right now</button>
+        </div>
+      </div>
+
+      <!-- Message bubbles -->
+      <div id="chat-messages" class="flex-1 overflow-y-auto px-4 py-4 space-y-3"></div>
+
+      <!-- Suggestion chips -->
+      <div id="starter-chips" class="hidden px-4 pb-2">
+        <p class="text-xs text-gray-400 mb-2 font-medium">Suggested messages</p>
+        <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" id="starter-chips-row"></div>
+      </div>
+
+      <!-- Input area -->
+      <div class="bg-white border-t border-gray-100 px-4 py-3 flex-shrink-0">
+        <p class="text-[10px] text-gray-300 text-center mb-2">Keep conversations about skill swaps only. Never share personal contact details.</p>
+        <div class="flex items-end gap-2">
+          <div class="flex-1 border border-gray-200 rounded-2xl px-4 py-2.5 text-sm text-[#2C3E50] bg-white min-h-[44px] max-h-32 overflow-y-auto"
+               id="chat-input"
+               contenteditable="true"
+               data-placeholder="Type a message..."
+               style="outline:none;"
+               onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></div>
+          <button onclick="openProposeSwapModal()" id="propose-swap-btn"
+                  class="flex-shrink-0 px-3 py-2.5 rounded-xl border border-[#3DBFBF] text-[#3DBFBF] text-xs font-semibold hover:bg-teal-50 transition-colors whitespace-nowrap">
+            + Propose swap
+          </button>
+          <button onclick="sendMessage()" class="flex-shrink-0 w-10 h-10 rounded-xl bg-[#E8793A] text-white flex items-center justify-center hover:bg-[#d4692b] transition-colors">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M3 10l14-7-7 14V10H3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Propose Swap Modal ── -->
+    <div id="propose-swap-modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+        <h3 class="text-lg font-black text-[#2C3E50] mb-1">Propose a skill swap</h3>
+        <p class="text-sm text-gray-400 mb-5">Choose one skill each to exchange. Once both parties agree, your swap is confirmed.</p>
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">I will teach</label>
+          <select id="modal-you-teach" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-[#2C3E50] bg-white"></select>
+        </div>
+        <div class="mb-6">
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">They will teach me</label>
+          <select id="modal-they-teach" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-[#2C3E50] bg-white"></select>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="closeProposeSwapModal()" class="flex-1 border border-gray-200 text-gray-500 py-3 rounded-xl text-sm font-medium">Cancel</button>
+          <button onclick="submitSwapProposal()" class="flex-1 bg-[#E8793A] text-white py-3 rounded-xl text-sm font-semibold hover:bg-[#d4692b] transition-colors">Send proposal</button>
+        </div>
+      </div>
+    </div>
+
+  </section><!-- /messages -->
+
+
   <!-- ═══════════════════════ JAVASCRIPT ═══════════════════════ -->
   <script>
 
@@ -936,6 +1185,62 @@
       }
     ];
 
+    const conversations = [
+      {
+        id: 1,
+        withProfileId: 5,
+        withName: 'Liz',
+        withInitial: 'L',
+        withColor: '#E8793A',
+        withAge: 57,
+        unread: true,
+        swapProposed: false,
+        swapAgreed: false,
+        swapDetail: { youTeach: '', theyTeach: '' },
+        messages: [
+          { id: 1, sender: 'them', text: 'Hi! I saw your profile and I think we could have a great swap. I can teach you cooking and gardening, and I would love help with Instagram and Photography.', time: '2 days ago' },
+          { id: 2, sender: 'me', text: 'That sounds perfect. I have been wanting to learn to cook properly for ages.', time: '2 days ago' },
+          { id: 3, sender: 'them', text: 'Brilliant! Should we meet for a coffee first to get to know each other?', time: 'Yesterday' }
+        ]
+      },
+      {
+        id: 2,
+        withProfileId: 12,
+        withName: 'Derek',
+        withInitial: 'D',
+        withColor: '#5B9BD5',
+        withAge: 68,
+        unread: true,
+        swapProposed: true,
+        swapAgreed: false,
+        swapDetail: { youTeach: 'Social Media', theyTeach: 'CV & Job Applications' },
+        messages: [
+          { id: 1, sender: 'them', text: 'Hello! I saw we matched on skills. I could really use help with TikTok and video editing, and I have 20 years of experience in interviews and career development.', time: '5 days ago' },
+          { id: 2, sender: 'me', text: 'Hi Derek! Yes, I would love that. I have a job interview coming up so the timing is perfect.', time: '5 days ago' },
+          { id: 3, sender: 'them', text: 'I have sent you a swap proposal: you teach me Social Media, I coach you on CV and Interview prep. Take a look above.', time: '4 days ago' }
+        ]
+      },
+      {
+        id: 3,
+        withProfileId: 7,
+        withName: 'Tom',
+        withInitial: 'T',
+        withColor: '#E74C3C',
+        withAge: 81,
+        unread: false,
+        swapProposed: true,
+        swapAgreed: true,
+        swapDetail: { youTeach: 'Social Media', theyTeach: 'Music' },
+        messages: [
+          { id: 1, sender: 'them', text: 'Hello there! I am Tom. I have been playing guitar for 60 years and would love to pass on what I know. Could you help me understand how to do video calls more easily?', time: '2 weeks ago' },
+          { id: 2, sender: 'me', text: 'Tom! I would absolutely love to learn guitar. Yes of course I can help with video calls — it is easier than you think.', time: '2 weeks ago' },
+          { id: 3, sender: 'system', text: 'Swap agreed! Both parties have confirmed this skill exchange.', time: '1 week ago' }
+        ]
+      }
+    ];
+
+    let activeConversationId = null;
+
     const meetups = [
       {
         id: 1,
@@ -1022,13 +1327,13 @@
     // ──────────────────────────────
 
     function showScreen(name) {
-      ['landing', 'onboarding', 'matches', 'meetups', 'profile'].forEach(s => {
+      ['landing', 'onboarding', 'matches', 'meetups', 'profile', 'messages'].forEach(s => {
         const el = document.getElementById('screen-' + s);
         if (el) el.classList.toggle('hidden', s !== name);
       });
 
       const nav = document.getElementById('main-nav');
-      if (['matches', 'meetups', 'profile'].includes(name)) {
+      if (['matches', 'meetups', 'profile', 'messages'].includes(name)) {
         nav.classList.remove('hidden');
       } else {
         nav.classList.add('hidden');
@@ -1042,6 +1347,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
       if (name === 'meetups') { setTimeout(initMap, 50); }
       if (name === 'profile') renderProfileScreen();
+      if (name === 'messages') renderConversationsList();
     }
 
 
@@ -1051,10 +1357,11 @@
 
     function renderSkillsGrid(containerId, listName, excludeList = []) {
       const selectedList = listName === 'have' ? userProfile.skillsHave : userProfile.skillsWant;
+      const chipClass = listName === 'want' ? 'skill-chip-want' : 'skill-chip';
       document.getElementById(containerId).innerHTML = allSkills
         .filter(s => !excludeList.includes(s))
         .map(skill => `
-          <button class="skill-chip border-2 border-gray-200 rounded-full px-4 py-2 text-sm font-medium text-gray-600 bg-white
+          <button class="${chipClass} border-2 border-gray-200 rounded-full px-4 py-2 text-sm font-medium text-gray-600 bg-white
                          ${selectedList.includes(skill) ? 'selected' : ''}"
                   onclick="toggleSkill('${skill.replace(/&/g,'&amp;').replace(/'/g,'&#39;')}', '${listName}', this)">
             ${skill}
@@ -1067,6 +1374,26 @@
       const idx = arr.indexOf(skill);
       if (idx === -1) { arr.push(skill); el.classList.add('selected'); }
       else            { arr.splice(idx, 1); el.classList.remove('selected'); }
+    }
+
+    function addCustomSkill(listName, inputId) {
+      const input = document.getElementById(inputId);
+      const skill = input.value.trim();
+      if (!skill) return;
+      const arr = listName === 'have' ? userProfile.skillsHave : userProfile.skillsWant;
+      if (arr.includes(skill)) {
+        showToast('You have already added that skill');
+        return;
+      }
+      arr.push(skill);
+      const chipClass = listName === 'want' ? 'skill-chip-want' : 'skill-chip';
+      const gridId = listName === 'have' ? 'skills-have-grid' : 'skills-want-grid';
+      const chip = document.createElement('button');
+      chip.className = `${chipClass} border-2 border-gray-200 rounded-full px-4 py-2 text-sm font-medium text-gray-600 bg-white selected`;
+      chip.textContent = skill;
+      chip.onclick = () => toggleSkill(skill, listName, chip);
+      document.getElementById(gridId).appendChild(chip);
+      input.value = '';
     }
 
 
@@ -1314,11 +1641,296 @@ function reportProfile(id) {
     function connectWith(id, name) {
       const btn = document.getElementById('connect-' + id);
       if (!btn || btn.disabled) return;
-      btn.textContent = 'Request sent';
+
+      // Find or create a conversation for this person
+      let conv = conversations.find(c => c.withProfileId === id);
+      if (!conv) {
+        const p = profiles.find(x => x.id === id);
+        conv = {
+          id: conversations.length + 1,
+          withProfileId: id,
+          withName: name,
+          withInitial: p ? p.initial : name.charAt(0),
+          withColor: p ? p.color : '#E8793A',
+          withAge: p ? p.age : '',
+          swapProposed: false,
+          swapAgreed: false,
+          swapDetail: { youTeach: '', theyTeach: '' },
+          messages: []
+        };
+        conversations.push(conv);
+      }
+
+      btn.textContent = 'Message sent';
       btn.classList.remove('bg-[#2C3E50]', 'hover:bg-[#1a252f]');
       btn.classList.add('bg-[#3DBFBF]', 'cursor-default');
       btn.disabled = true;
-      showToast(`Request sent to ${name}. They will be in touch soon.`);
+
+      showScreen('messages');
+      openConversation(conv.id);
+    }
+
+    // ──────────────────────────────
+    //  MESSAGES
+    // ──────────────────────────────
+
+    const starterTemplates = [
+      "Hi! I would love to arrange a skill swap. When would work for you?",
+      "Could we meet for a coffee first to chat about what the swap would look like?",
+      "I am thinking we could do one session each to see how it goes. What do you think?",
+      "I have found a great public cafe near us — would that work for a first meetup?",
+      "What skill would you most like to start with?"
+    ];
+
+    function renderConversationsList() {
+      const list = document.getElementById('conversations-list');
+      const empty = document.getElementById('messages-empty');
+      // Show unread dot in nav if any unread conversations
+      const hasDot = conversations.some(c => c.unread);
+      const navDot = document.getElementById('nav-messages-dot');
+      if (navDot) navDot.classList.toggle('hidden', !hasDot);
+
+      if (!conversations.length) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.innerHTML = conversations.map((c, i) => {
+        const lastMsg = c.messages[c.messages.length - 1];
+        const rawPreview = lastMsg ? lastMsg.text : 'No messages yet';
+        const preview = rawPreview.length > 55 ? rawPreview.slice(0, 52) + '...' : rawPreview;
+        const senderPrefix = lastMsg && lastMsg.sender === 'me' ? 'You: ' : '';
+        const hasActiveProposal = c.swapProposed && !c.swapAgreed;
+        const isLast = i === conversations.length - 1;
+        return `
+          <button class="w-full px-4 py-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left ${isLast ? '' : 'border-b border-gray-100'}"
+                  onclick="openConversation(${c.id})">
+            <!-- Avatar with optional unread dot -->
+            <div class="relative flex-shrink-0">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-black text-base"
+                   style="background:${c.withColor}">${c.withInitial}</div>
+              ${c.unread ? `<span class="absolute top-0 right-0 w-2.5 h-2.5 bg-[#E8793A] rounded-full border-2 border-white"></span>` : ''}
+            </div>
+            <!-- Text content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2 mb-0.5">
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <span class="${c.unread ? 'font-bold' : 'font-semibold'} text-[#2C3E50] text-sm truncate">${c.withName}${c.withAge ? ', ' + c.withAge : ''}</span>
+                  ${c.swapAgreed
+                    ? `<span class="text-[10px] font-semibold text-[#3DBFBF] bg-teal-50 px-2 py-0.5 rounded-full flex-shrink-0">Swap agreed</span>`
+                    : hasActiveProposal
+                    ? `<span class="text-[10px] font-semibold text-[#E8793A] bg-orange-50 px-2 py-0.5 rounded-full flex-shrink-0">Swap proposed</span>`
+                    : ''}
+                </div>
+                ${lastMsg ? `<span class="text-[11px] text-gray-300 flex-shrink-0">${lastMsg.time}</span>` : ''}
+              </div>
+              <p class="${c.unread ? 'text-[#2C3E50] font-medium' : 'text-gray-400'} text-xs truncate">${senderPrefix}${preview}</p>
+            </div>
+          </button>`;
+      }).join('');
+    }
+
+    function openConversation(id) {
+      activeConversationId = id;
+      const conv = conversations.find(c => c.id === id);
+      if (!conv) return;
+
+      document.getElementById('messages-list-view').classList.add('hidden');
+      document.getElementById('messages-chat-view').classList.remove('hidden');
+
+      const avatarEl = document.getElementById('chat-avatar');
+      avatarEl.style.background = conv.withColor;
+      avatarEl.textContent = conv.withInitial;
+      document.getElementById('chat-name').textContent = conv.withName;
+      document.getElementById('chat-age-label').textContent = conv.withAge ? `${conv.withAge} years old` : '';
+
+      // Skill context line — always shown; text varies by swap state
+      const skillLine = document.getElementById('chat-skill-line');
+      const theirProfile = profiles.find(p => p.id === conv.withProfileId);
+      if ((conv.swapAgreed || conv.swapProposed) && conv.swapDetail.youTeach && conv.swapDetail.theyTeach) {
+        skillLine.textContent = `${conv.swapDetail.youTeach} ↔ ${conv.swapDetail.theyTeach}`;
+        skillLine.classList.remove('hidden');
+      } else if (theirProfile && theirProfile.teaches.length) {
+        skillLine.textContent = `They can teach: ${theirProfile.teaches.slice(0, 2).join(', ')}`;
+        skillLine.classList.remove('hidden');
+      } else {
+        skillLine.classList.add('hidden');
+      }
+
+      // Mark as read when opened
+      conv.unread = false;
+      const navDot = document.getElementById('nav-messages-dot');
+      if (navDot && !conversations.some(c => c.unread)) navDot.classList.add('hidden');
+
+      document.getElementById('chat-report-btn').onclick = () => reportProfile(conv.withProfileId);
+
+      const badge = document.getElementById('chat-swap-badge');
+      if (conv.swapAgreed) {
+        badge.classList.remove('hidden');
+        badge.classList.add('flex');
+      } else {
+        badge.classList.add('hidden');
+        badge.classList.remove('flex');
+      }
+
+      renderSwapProposalCard(conv);
+      renderChatMessages(conv);
+
+      const starterBar = document.getElementById('starter-chips');
+      if (conv.messages.length < 3) {
+        renderStarterChips();
+        starterBar.classList.remove('hidden');
+      } else {
+        starterBar.classList.add('hidden');
+      }
+
+      const chatEl = document.getElementById('chat-messages');
+      setTimeout(() => { chatEl.scrollTop = chatEl.scrollHeight; }, 50);
+    }
+
+    function showConversationList() {
+      activeConversationId = null;
+      document.getElementById('messages-chat-view').classList.add('hidden');
+      document.getElementById('messages-list-view').classList.remove('hidden');
+      renderConversationsList();
+    }
+
+    function toggleChatMenu() {
+      document.getElementById('chat-overflow-menu').classList.toggle('hidden');
+    }
+
+    // Close the overflow menu when clicking anywhere outside it
+    document.addEventListener('click', function(e) {
+      const wrap = document.getElementById('chat-overflow-wrap');
+      if (wrap && !wrap.contains(e.target)) {
+        document.getElementById('chat-overflow-menu').classList.add('hidden');
+      }
+    });
+
+    function renderChatMessages(conv) {
+      const container = document.getElementById('chat-messages');
+      container.innerHTML = conv.messages.map(m => {
+        if (m.sender === 'system') {
+          return `<div class="flex justify-center"><span class="text-[11px] text-gray-400 bg-gray-100 px-3 py-1.5 rounded-full">${m.text}</span></div>`;
+        }
+        const isMe = m.sender === 'me';
+        const bubbleClass = isMe ? 'bubble-me' : 'bubble-them';
+        const wrapAlign = isMe ? 'justify-end' : 'justify-start';
+        return `
+          <div class="flex ${wrapAlign}">
+            <div class="${bubbleClass} max-w-[75%] px-4 py-2.5 text-sm leading-relaxed">
+              ${m.text}
+              <div class="text-[10px] mt-1 ${isMe ? 'text-white/60' : 'text-gray-300'} text-right">${m.time}</div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderStarterChips() {
+      const row = document.getElementById('starter-chips-row');
+      row.innerHTML = starterTemplates.map(text => `
+        <button class="flex-shrink-0 text-xs border border-gray-200 rounded-full px-3 py-1.5 text-gray-500 hover:border-[#E8793A] hover:text-[#E8793A] bg-white transition-colors whitespace-nowrap"
+                onclick="useStarterTemplate(this, ${JSON.stringify(text)})">
+          ${text}
+        </button>`).join('');
+    }
+
+    function useStarterTemplate(btn, text) {
+      const input = document.getElementById('chat-input');
+      input.textContent = text;
+      btn.disabled = true;
+      btn.classList.add('opacity-40');
+    }
+
+    function sendMessage() {
+      const conv = conversations.find(c => c.id === activeConversationId);
+      if (!conv) return;
+      const input = document.getElementById('chat-input');
+      const text = (input.textContent || '').trim();
+      if (!text) return;
+      conv.messages.push({ id: conv.messages.length + 1, sender: 'me', text, time: 'Just now' });
+      input.textContent = '';
+      renderChatMessages(conv);
+      document.getElementById('starter-chips').classList.add('hidden');
+      const chatEl = document.getElementById('chat-messages');
+      setTimeout(() => { chatEl.scrollTop = chatEl.scrollHeight; }, 50);
+    }
+
+    function renderSwapProposalCard(conv) {
+      const card = document.getElementById('swap-proposal-card');
+      if (!conv.swapProposed) { card.classList.add('hidden'); return; }
+      card.classList.remove('hidden');
+      document.getElementById('proposal-you-teach').textContent = `You teach: ${conv.swapDetail.youTeach}`;
+      document.getElementById('proposal-they-teach').textContent = `They teach: ${conv.swapDetail.theyTeach}`;
+      const actions = document.getElementById('proposal-actions');
+      const badge = document.getElementById('proposal-agreed-badge');
+      if (conv.swapAgreed) {
+        actions.classList.add('hidden');
+        badge.classList.remove('hidden');
+      } else {
+        actions.classList.remove('hidden');
+        badge.classList.add('hidden');
+      }
+    }
+
+    function agreeToSwap() {
+      const conv = conversations.find(c => c.id === activeConversationId);
+      if (!conv) return;
+      conv.swapAgreed = true;
+      const badge = document.getElementById('chat-swap-badge');
+      badge.classList.remove('hidden');
+      badge.classList.add('flex');
+      renderSwapProposalCard(conv);
+      conv.messages.push({ id: conv.messages.length + 1, sender: 'system', text: 'Swap agreed! Both parties have confirmed this skill exchange.', time: 'Just now' });
+      renderChatMessages(conv);
+      const chatEl = document.getElementById('chat-messages');
+      setTimeout(() => { chatEl.scrollTop = chatEl.scrollHeight; }, 50);
+      showToast(`Swap confirmed with ${conv.withName}. Enjoy the exchange!`);
+    }
+
+    function declineSwap() {
+      const conv = conversations.find(c => c.id === activeConversationId);
+      if (!conv) return;
+      conv.swapProposed = false;
+      renderSwapProposalCard(conv);
+      showToast('Swap proposal declined. You can propose a new one any time.');
+    }
+
+    function openProposeSwapModal() {
+      const conv = conversations.find(c => c.id === activeConversationId);
+      if (!conv) return;
+      const theirProfile = profiles.find(p => p.id === conv.withProfileId);
+
+      const youTeachSel = document.getElementById('modal-you-teach');
+      const mySkills = userProfile.skillsHave && userProfile.skillsHave.length ? userProfile.skillsHave : ['Social Media', 'Photography', 'Coding'];
+      youTeachSel.innerHTML = mySkills.map(s => `<option value="${s}">${s}</option>`).join('');
+
+      const theyTeachSel = document.getElementById('modal-they-teach');
+      const theirSkills = theirProfile ? theirProfile.teaches : ['Cooking', 'Music', 'Language'];
+      theyTeachSel.innerHTML = theirSkills.map(s => `<option value="${s}">${s}</option>`).join('');
+
+      document.getElementById('propose-swap-modal').classList.remove('hidden');
+    }
+
+    function closeProposeSwapModal() {
+      document.getElementById('propose-swap-modal').classList.add('hidden');
+    }
+
+    function submitSwapProposal() {
+      const conv = conversations.find(c => c.id === activeConversationId);
+      if (!conv) return;
+      const youTeach = document.getElementById('modal-you-teach').value;
+      const theyTeach = document.getElementById('modal-they-teach').value;
+      conv.swapProposed = true;
+      conv.swapDetail = { youTeach, theyTeach };
+      closeProposeSwapModal();
+      renderSwapProposalCard(conv);
+      conv.messages.push({ id: conv.messages.length + 1, sender: 'me', text: `I have proposed a swap: I teach you ${youTeach}, you teach me ${theyTeach}. Let me know if that works for you!`, time: 'Just now' });
+      renderChatMessages(conv);
+      const chatEl = document.getElementById('chat-messages');
+      setTimeout(() => { chatEl.scrollTop = chatEl.scrollHeight; }, 50);
+      showToast('Swap proposal sent!');
     }
 
     function renderProfileScreen() {
